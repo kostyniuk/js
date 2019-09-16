@@ -14,24 +14,21 @@ const indexOfExt = (el, arr) => {
   return indexes;
 };
 
-//console.log(examples);
-//console.log(similarity(key, examples));
-
 const defMode =
-  key === 'default'
-    ? [
-        'for',
-        'fir',
-        'asd',
-        'fore',
-        'adsffs',
-        'fore',
-        'dasvx',
-        'poer',
-        'for',
-        'fore'
-      ]
-    : examples;
+  key === 'default' ?
+    [
+      'for',
+      'fir',
+      'asd',
+      'fore',
+      'adsffs',
+      'fore',
+      'dasvx',
+      'poer',
+      'for',
+      'fore'
+    ] :
+    examples;
 key = 'forest';
 
 const bs = (target, arr, left, right) => {
