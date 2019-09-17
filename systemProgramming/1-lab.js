@@ -14,7 +14,7 @@ const indexOfExt = (el, arr) => {
   return indexes;
 };
 
-const values =
+let values =
   key === 'default' ?
     [
       'for',
@@ -41,7 +41,10 @@ const bs = (target, arr, left, right) => {
   return bs(target, arr, left, right - 1);
 };
 
-const obj = {
+// key = key.toLowerCase();
+// values = values.map(x => x.toLowerCase());
+
+const hash = {
   key,
   arr: values,
   search(target, array = this.arr, left = 0, right = array.length - 1) {
@@ -51,18 +54,18 @@ const obj = {
   },
   create(str) {
     this.arr.push(str);
-    return obj;
+    return hash;
   },
   update(str1, str2) {
     const index = this.search(str1);
     this.arr[index] = str2;
-    return obj;
+    return hash;
   },
   delete(target) {
     const index = this.search(target);
     console.log({ index });
     this.arr.splice(index, 1);
-    return obj;
+    return hash;
   },
   similarity() {
     const repeats = [...this.arr].map(() => 0);
@@ -95,12 +98,12 @@ const obj = {
 
 // USAGE
 
-console.log(obj.similarity());
+console.log(hash.similarity());
 // console.dir('---SEARCHING---');
-// console.dir(obj.search('fore'));
+// console.dir(hash.search('fore'));
 // console.dir('---CREATING---');
-// console.dir(obj.create('forasc'));
+// console.dir(hash.create('forasc'));
 // console.dir('---UPDATING---');
-// console.dir(obj.update('asd', 'asd2'));
+// console.dir(hash.update('asd', 'asd2'));
 // console.dir('---DELETING---');
-// console.dir(obj.delete('fir'));
+// console.dir(hash.delete('fir'));
