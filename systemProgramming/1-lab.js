@@ -14,22 +14,24 @@ const indexOfExt = (el, arr) => {
   return indexes;
 };
 
-const defMode =
+const values =
   key === 'default' ?
     [
       'for',
       'fir',
       'asd',
-      'fore',
+      'foreqewqewq',
       'adsffs',
-      'fore',
+      'forebv',
       'dasvx',
       'poer',
       'for',
-      'fore'
+      'foreer'
     ] :
     examples;
-key = 'forest';
+
+if (key === 'default') key = 'forest';
+else key = process.argv[2]
 
 const bs = (target, arr, left, right) => {
   const mid = Math.floor((right - left) / 2 + left);
@@ -41,24 +43,26 @@ const bs = (target, arr, left, right) => {
 
 const obj = {
   key,
-  arr: defMode,
-  search(target, array = this.values, left = 0, right = array.length - 1) {
+  arr: values,
+  search(target, array = this.arr, left = 0, right = array.length - 1) {
     const sorted = array.sort();
+    console.dir({ sorted });
     return bs(target, sorted, left, right);
   },
   create(str) {
-    this.values.push(str);
-    return obj.values;
+    this.arr.push(str);
+    return obj;
   },
   update(str1, str2) {
     const index = this.search(str1);
-    this.values[index] = str2;
-    return obj.values;
+    this.arr[index] = str2;
+    return obj;
   },
   delete(target) {
     const index = this.search(target);
-    this.values.splice(index, 1);
-    return obj.values;
+    console.log({ index });
+    this.arr.splice(index, 1);
+    return obj;
   },
   similarity() {
     const repeats = [...this.arr].map(() => 0);
@@ -75,6 +79,7 @@ const obj = {
     const substring = key.substring(0, max);
     return {
       key,
+      values,
       substring,
       indexes,
       words: (() => {
@@ -88,4 +93,14 @@ const obj = {
   }
 };
 
+// USAGE
+
 console.log(obj.similarity());
+// console.dir('---SEARCHING---');
+// console.dir(obj.search('fore'));
+// console.dir('---CREATING---');
+// console.dir(obj.create('forasc'));
+// console.dir('---UPDATING---');
+// console.dir(obj.update('asd', 'asd2'));
+// console.dir('---DELETING---');
+// console.dir(obj.delete('fir'));
