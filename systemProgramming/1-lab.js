@@ -31,7 +31,7 @@ const values =
     examples;
 
 if (key === 'default') key = 'forest';
-else key = process.argv[2]
+else key = process.argv[2];
 
 const bs = (target, arr, left, right) => {
   const mid = Math.floor((right - left) / 2 + left);
