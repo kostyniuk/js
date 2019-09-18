@@ -30,7 +30,7 @@ let values =
     ] :
     examples;
 
-if (key === 'default') key = 'forest';
+if (key === 'default') key = 'forty';
 else key = process.argv[2];
 
 const bs = (target, arr, left, right) => {
@@ -41,8 +41,8 @@ const bs = (target, arr, left, right) => {
   return bs(target, arr, left, right - 1);
 };
 
-// key = key.toLowerCase();
-// values = values.map(x => x.toLowerCase());
+key = key.toLowerCase();
+values = values.map(x => x.toLowerCase());
 
 const hash = {
   key,
@@ -85,6 +85,7 @@ const hash = {
       values,
       substring,
       indexes,
+      max,
       words: (() => {
         const words = [];
         for (let i = 0; i < indexes.length; i++) {
