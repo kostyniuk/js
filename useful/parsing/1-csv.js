@@ -1,6 +1,6 @@
 'use strict';
 
-let fs = require('fs');
+const fs = require('fs');
 
 const getDataset = file => {
   const lines = fs.readFileSync(file, 'utf8').split('\n');
