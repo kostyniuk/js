@@ -12,7 +12,7 @@ const indexOfExt = (el, arr) => {
     if (el === arr[i]) indexes.push(i);
   }
   return indexes;
-};
+}
 
 let values =
   key === 'default' ?
@@ -100,11 +100,11 @@ const hash = {
 // USAGE
 
 console.log(hash.similarity());
-// console.dir('---SEARCHING---');
-// console.dir(hash.search('fore'));
-// console.dir('---CREATING---');
-// console.dir(hash.create('forasc'));
-// console.dir('---UPDATING---');
-// console.dir(hash.update('asd', 'asd2'));
-// console.dir('---DELETING---');
-// console.dir(hash.delete('fir'));
+console.dir('---SEARCHING---');
+console.dir(hash.search('fore'));
+console.dir('---CREATING---');
+console.dir(hash.create('forasc'));
+console.dir('---UPDATING---');
+console.dir(hash.update('asd', 'asd2'));
+console.dir('---DELETING---');
+console.dir(hash.delete('fir'));
