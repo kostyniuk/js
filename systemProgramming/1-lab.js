@@ -12,7 +12,7 @@ const indexOfExt = (el, arr) => {
     if (el === arr[i]) indexes.push(i);
   }
   return indexes;
-}
+};
 
 let values =
   key === 'default' ?
