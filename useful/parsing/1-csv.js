@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+let fs = require('fs');
 
 const getDataset = file => {
   const lines = fs.readFileSync(file, 'utf8').split('\n');
@@ -15,6 +15,7 @@ const buildIndex = (ds, col) => {
     index.set(record[col], record);
   }
   return index;
+
 };
 
 // Usage
