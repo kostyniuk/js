@@ -22,10 +22,16 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
+  //throw (new Error('It is over'));
   res.json({
     data: req.hash,
     chance: req.chance
   });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send('Something broke!');
 });
 
 app.listen(PORT, (err) => {
