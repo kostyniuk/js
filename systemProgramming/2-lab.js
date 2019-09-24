@@ -82,15 +82,39 @@ const simulation = (map, args) => {
 
 //console.log(simulation(myMap.get(1), ['dlm', 'cfr', 'dlm', 'ltr']));
 
-const execution = (map, start, ...signals) => {
+const execution = (map, start, ...args) => {
+  const signals = args;
+
+  const keys = Object.keys(myMap.values().next().value);
+  keys.shift();
+  const allowedSignals = keys;
+
   const primary = map.get(start);
-  let result = primary[signals[0]]();
-  console.log(result);
-  for (let i = 1; i < signals.length; i++) {
+  let result;
+  console.log(allowedSignals, signals);
+  if (allowedSignals.includes(signals[0])) {
+    result = primary[signals[0]]();
+    signals.shift();
+
+  } else {
+    console.log('else');
+    signals.shift();
+    execution(map, start, ...signals);
+  }
+
+  console.log(result, signals, signals.length);
+  for (let i = 0; i < signals.length; i++) {
+    console.log('before', i);
+    console.log(result, i, signals[i]);
+    console.log('mid')
     result = result[signals[i]]();
-    console.log(result, i);
+    console.log(result, i, signals[i]);
+    console.log('End');
+    if (i === 3) break;
   }
   return result;
 };
 
-console.log(execution(myMap, 1, 'dlm', 'cfr', 'dlm', 'ltr'));
+console.log(execution(myMap, 1, 'dal', 'dlm', 'cfr', 'dlm', 'ltr', 'cfr'));
+
+console.log(Object.keys(myMap.values().next().value));
