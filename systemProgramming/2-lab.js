@@ -1,19 +1,11 @@
 'use strict';
 
-// const mur = {
-//   'first': {
-//     dlm: () => mur.second,
-//     cfr: () => mur.second,
-//     ltr: () => mur.second,
-//   },
-//   'second': {
-//     logging: 2
-//   }
-// };
-
-//console.log(mur['1'].dlm());
-
 const myMap = new Map();
+
+const examples = [];
+for (let i = 2; i < process.argv.length; i++) {
+  examples.push(process.argv[i]);
+}
 
 myMap.set(1, {
   position: 1,
@@ -70,51 +62,31 @@ myMap.set(8, {
   cfr: () => myMap.get(8),
   ltr: () => myMap.get(8),
 });
-//console.log(myMap.get(1).dlm().cfr().dlm());
 
-const simulation = (map, args) => {
-  const signals = args;
-  console.log({ map, signals });
-  console.log(typeof map);
+const getSignals = (map) => {
+  const signals = Object.keys(map.values().next().value);
+  signals.shift();
+  return signals;
 };
 
-//console.log(parse(1, 2, 3, 4, 5));
-
-//console.log(simulation(myMap.get(1), ['dlm', 'cfr', 'dlm', 'ltr']));
-
-const execution = (map, start, ...args) => {
-  const signals = args;
-
-  const keys = Object.keys(myMap.values().next().value);
-  keys.shift();
-  const allowedSignals = keys;
-
-  const primary = map.get(start);
-  let result;
-  console.log(allowedSignals, signals);
-  if (allowedSignals.includes(signals[0])) {
-    result = primary[signals[0]]();
-    signals.shift();
-
-  } else {
-    console.log('else');
-    signals.shift();
-    execution(map, start, ...signals);
-  }
-
-  console.log(result, signals, signals.length);
-  for (let i = 0; i < signals.length; i++) {
-    console.log('before', i);
-    console.log(result, i, signals[i]);
-    console.log('mid')
-    result = result[signals[i]]();
-    console.log(result, i, signals[i]);
-    console.log('End');
-    if (i === 3) break;
-  }
-  return result;
+const exec = (current, signals, allowedSignals, previous) => {
+  const arrOfSgnls = signals;
+  return () => {
+    const signal = arrOfSgnls.shift();
+    console.log(`${previous} -> ${current.position}`);
+    if (!signal) return 'End';
+    if (allowedSignals.includes(signal)) {
+      return exec(current[signal](), arrOfSgnls, allowedSignals, signal)();
+    }
+    return exec(current, arrOfSgnls, allowedSignals, signal)();
+  };
 };
 
-console.log(execution(myMap, 1, 'dal', 'dlm', 'cfr', 'dlm', 'ltr', 'cfr'));
+const simulation = (map, start, ...args) => {
+  const first = map.get(start);
+  const receivedSignals = args;
+  const signals = getSignals(map);
+  console.log(exec(first, receivedSignals, signals, 'start')());
+};
 
-console.log(Object.keys(myMap.values().next().value));
+simulation(myMap, 1, ...examples);
