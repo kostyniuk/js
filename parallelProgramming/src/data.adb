@@ -68,7 +68,7 @@ package body Data is
    return k;
    end Min_vector_value;
 
-   --Multiplication of matrices
+   --Multiplication of matrics
    function Matrix_Multiplication(A, B: in Matrix) return Matrix is
       P: Matrix;
       S: Integer;
@@ -85,7 +85,7 @@ package body Data is
       return P;
    end Matrix_Multiplication;
 
-   --Multiplication of vector and matrix
+   --Multiplication of a vector and a matrix
    function Vector_Matrix_Multiplication(A: in Vector; B: in Matrix) return Vector is
       P: Vector;
       S: Integer;
@@ -110,7 +110,7 @@ package body Data is
       return S;
    end Vector_Sum;
 
-   --Transposition of Matrix
+   --Transposition of a Matrix
    procedure Matrix_Transposition(A: in out Matrix) is
       S: Integer;
    begin
