@@ -1,0 +1,23 @@
+[GENERATED OBJECT FILE]
+b__main.o
+[PROJECT FILES]
+/home/kostyniuk/Documents/Lab1_OPP/testlab1.gpr
+20190925205636
+[BOUND OBJECT FILES]
+/home/kostyniuk/Documents/Lab1_OPP/obj/data.o
+/home/kostyniuk/Documents/Lab1_OPP/obj/main.o
+[GENERATED SOURCE FILES]
+b__main.ads
+b__main.adb
+b__main.ali
+[RESULTING OPTIONS]
+-L/home/kostyniuk/Documents/Lab1_OPP/obj/
+-L/home/kostyniuk/Documents/Lab1_OPP/obj/
+-L/usr/lib/gcc/x86_64-redhat-linux/9/adalib/
+-static
+-static-libgcc
+/usr/lib/gcc/x86_64-redhat-linux/9/adalib/libgnarl.a
+/usr/lib/gcc/x86_64-redhat-linux/9/adalib/libgnat.a
+-lpthread
+-lrt
+-ldl
