@@ -39,7 +39,7 @@ const getReserved = (str, arrOfReserved) => {
   return reservedUsed;
 };
 
-let identiers = [];
+const identiers = [];
 const getIdintiers = expression => {
   const str = expression;
   const current = str.match(regex);
