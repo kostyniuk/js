@@ -3,6 +3,7 @@
 const expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
+
 if (expression.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
@@ -75,6 +76,27 @@ const symbolsUsed = getSymbols(expression, symbols);
 const reservedUsed = getReserved(expression, reserved);
 const numbersUsed = getNumbers(expression);
 const identiersUsed = deleteCopies(getIdentiers(expression), reserved);
+
+
+const fix = (symbols, expression) => {
+  const singles = symbols.filter(el => el.length < 2);
+  console.log(singles);
+  for (let i = 0; i < singles.length; i++) {
+    const index = expression.indexOf(singles[i]);
+    console.log(index);
+    console.log(expression[index]);
+    if (expression[index] === expression[index + 1]) {
+      console.log('Same ', expression[index]);
+      const indexGlobal = symbols.indexOf(singles[i]);
+    //   symbols.splice(indexGlobal, 1);
+    //   --i;
+      //console.log(symbols[i]);
+    }
+  }
+  return symbols;
+};
+
+console.log(fix(symbolsUsed, expression));
 
 console.log({ reservedUsed });
 console.log({ symbolsUsed });
