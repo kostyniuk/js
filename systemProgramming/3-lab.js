@@ -4,13 +4,13 @@ const expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
 if (expression.match(cyrillicPattern)) {
-  console.log('Something went wrong');
+  console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
 }
 
-const reserved = ['if', 'else', 'switch', 'case', 'default', 'break', 'int',
-  'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void', 'goto',
-  'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
+const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
+  'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
+  'goto', 'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
   'continue', 'Enumerator', 'sizeof', 'struct', 'typedev', 'union', 'volatile'];
 
 const symbols = [':', '+', '-', '*', '/', '%', '++', '--', '==', '!=', '>',
@@ -40,17 +40,24 @@ const getReserved = (str, arrOfReserved) => {
 };
 
 const identiers = [];
-const getIdintiers = expression => {
+const getIdentiers = expression => {
   const str = expression;
   const current = str.match(regex);
   if (current) {
     identiers.push(current[0]);
-    return getIdintiers(str.replace(current, ''));
+    return getIdentiers(str.replace(current, ''));
   }
   return Array.from(new Set(identiers));
 };
 
-const getNumbers = (str) => str.match(/\d+/g).map(Number);
+const getNumbers = (str) => {
+  try {
+    const numbers = str.match(/\d+/g).map(Number);
+    return numbers;
+  } catch (e)  {
+    return null;
+  }
+};
 
 const deleteCopies = (arr1, arr2) => {
   for (let i = 0; i < arr1.length; i++) {
@@ -67,7 +74,7 @@ const deleteCopies = (arr1, arr2) => {
 const symbolsUsed = getSymbols(expression, symbols);
 const reservedUsed = getReserved(expression, reserved);
 const numbersUsed = getNumbers(expression);
-const identiersUsed = deleteCopies(getIdintiers(expression), reserved);
+const identiersUsed = deleteCopies(getIdentiers(expression), reserved);
 
 console.log({ reservedUsed });
 console.log({ symbolsUsed });
