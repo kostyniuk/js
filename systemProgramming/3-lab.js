@@ -72,31 +72,34 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const symbolsUsed = getSymbols(expression, symbols);
+const fix = (symbols, expression) => {
+  const singles = symbols.filter(el => el.length < 2);
+  const multiples = symbols.filter(el => el.length > 1);
+  const i = 0;
+
+  const allentries = (arr, index, expression) => {
+    const current = arr[index];
+    const indexExp = expression.indexOf(current);
+    if (index === arr.length) return;
+    if (expression[indexExp] !== expression[indexExp + 1]) {
+      if (indexExp !== -1) multiples.push(current);
+      index += 1;
+      allentries(arr, index, expression);
+    } else {
+      const start = expression.substring(0, indexExp);
+      const end = expression.substring(indexExp + 2);
+      expression = start.concat(end);
+      allentries(arr, index, expression);
+    }
+  };
+  allentries(singles, i, expression);
+  return multiples;
+};
+
+const symbolsUsed = fix(getSymbols(expression, symbols), expression);
 const reservedUsed = getReserved(expression, reserved);
 const numbersUsed = getNumbers(expression);
 const identiersUsed = deleteCopies(getIdentiers(expression), reserved);
-
-
-const fix = (symbols, expression) => {
-  const singles = symbols.filter(el => el.length < 2);
-  console.log(singles);
-  for (let i = 0; i < singles.length; i++) {
-    const index = expression.indexOf(singles[i]);
-    console.log(index);
-    console.log(expression[index]);
-    if (expression[index] === expression[index + 1]) {
-      console.log('Same ', expression[index]);
-      const indexGlobal = symbols.indexOf(singles[i]);
-    //   symbols.splice(indexGlobal, 1);
-    //   --i;
-      //console.log(symbols[i]);
-    }
-  }
-  return symbols;
-};
-
-console.log(fix(symbolsUsed, expression));
 
 console.log({ reservedUsed });
 console.log({ symbolsUsed });
