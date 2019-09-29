@@ -7,8 +7,6 @@
 with Data, Text_IO, Ada.Integer_Text_IO, System.Multiprocessors;
 use Text_IO, Ada.Integer_Text_IO, System.Multiprocessors;
 
-CPU0: CPU_RANGE := 0;
-
 procedure main is
    n: Integer := 3 ;
    package data1 is new data (n);
@@ -18,10 +16,15 @@ procedure main is
    res3: Vector;
 
    procedure tasks is
+
+      CPU_1 : CPU_Range:=0;
+      CPU_2 : CPU_Range:=1;
+      CPU_3 : CPU_Range:=2;
+
       task T1 is
          pragma Priority(1);
          pragma Storage_Size(100000);
-         pragma CPU0();
+         pragma CPU(CPU_1);
       end;
 
       task body T1 is
@@ -43,7 +46,7 @@ procedure main is
       task T2 is
          pragma Priority(2);
          pragma Storage_Size(100000);
-         pragma CPU(2);
+         pragma CPU(CPU_2);
       end;
       task body T2 is
          MH, MG, MK: Matrix;
@@ -65,7 +68,7 @@ procedure main is
       task T3 is
          pragma Priority(3);
          pragma Storage_Size(100000);
-         pragma CPU(3);
+         pragma CPU(CPU_3);
       end;
       task body T3 is
          MR, MS : Matrix;
