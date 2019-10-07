@@ -3,6 +3,9 @@
 const expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
+const regex2 = /\d+[\w\d]+/;
+
+console.log(expression.match(regex2));
 
 if (expression.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
@@ -95,6 +98,10 @@ const fix = (symbols, expression) => {
   allentries(singles, i, expression);
   return multiples;
 };
+
+const str2 = '2gh dsadsa';
+const current = str2.match(regex2);
+console.log(current);
 
 const symbolsUsed = fix(getSymbols(expression, symbols), expression);
 const reservedUsed = getReserved(expression, reserved);
