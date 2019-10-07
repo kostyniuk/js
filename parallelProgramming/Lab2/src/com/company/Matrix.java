@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 
 public class Matrix {
@@ -14,18 +15,16 @@ public class Matrix {
         this.data = new int[n][n];
         if (fill) {
             Random rnd = new Random();
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++) {
                     this.data[i][j] = rnd.nextInt(10);
                 }
-            }
-            rnd = null;
         }
     }
 
     public Matrix add(Matrix another) {
         if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions!");
+            throw new IllegalArgumentException("Matrices have different dimensions!");
         Matrix result = new Matrix(this.n, false);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -35,21 +34,9 @@ public class Matrix {
         return result;
     }
 
-    public Matrix subtract(Matrix another) {
-        if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions!");
-        Matrix result = new Matrix(this.n, false);
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                result.data[i][j] = this.data[i][j] - another.data[i][j];
-            }
-        }
-        return result;
-    }
-
     public Matrix multiply(Matrix another) {
         if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions");
+            throw new IllegalArgumentException("Matrices have different dimensions");
         Matrix result = new Matrix(this.n, false);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -63,7 +50,7 @@ public class Matrix {
 
     public Vector multiply(Vector another) {
         if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions");
+            throw new IllegalArgumentException("Matrices have different dimensions");
         Vector result = new Vector(this.n, false);
 
         for (int i = 0; i < n; i++) {
@@ -74,25 +61,11 @@ public class Matrix {
         return result;
     }
 
-    public Matrix transpose() {
-        int tmp;
-        for (int i = 0; i < this.n; i++) {
-            for (int j = 0; j < this.n; j++) {
-                if (j < i) {
-                    tmp = this.data[i][j];
-                    this.data[i][j] = this.data[j][i];
-                    this.data[j][i] = tmp;
-                }
-            }
-        }
-        return this;
-    }
-
     public Matrix sort() {
         for (int i = 0; i < this.n; i++) {
             Arrays.sort(this.data[i]);
         }
-        Arrays.sort(this.data, (o1, o2) -> o1[0] - o2[0]);
+        Arrays.sort(this.data, Comparator.comparingInt(o -> o[0]));
         return this;
     }
 
@@ -105,7 +78,7 @@ public class Matrix {
             }
             return str.toString();
         } else {
-            return "Output is too cumbersome.";
+            return "Output is too huge.";
         }
     }
 

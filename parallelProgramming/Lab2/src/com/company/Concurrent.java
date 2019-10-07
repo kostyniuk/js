@@ -72,6 +72,7 @@ class F3 implements Runnable {
     @Override
     public void run() {
         System.out.println("Thread T3 started!");
+
         Vector P = new Vector(n, true);
         Vector R = new Vector(n, true);
 

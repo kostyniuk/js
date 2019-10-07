@@ -21,7 +21,7 @@ public class Vector {
 
     public Vector add(Vector another) {
         if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions!");
+            throw new IllegalArgumentException("Vectors have different dimensions!");
         Vector result = new Vector(this.n, false);
         for (int i = 0; i < n; i++) {
             result.data[i] = this.data[i] + another.data[i];
@@ -29,38 +29,14 @@ public class Vector {
         return result;
     }
 
-    public Vector subtract(Vector another) {
-        if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions!");
-        Vector result = new Vector(n, false);
-        for (int i = 0; i < n; i++) {
-            result.data[i] = this.data[i] - another.data[i];
-        }
-        return result;
-    }
-
     public long dotProduct(Vector another) {
         if (this.n != another.n)
-            throw new IllegalArgumentException("Operands have different dimensions!");
+            throw new IllegalArgumentException("Vectors have different dimensions!");
         int result = 0;
         for (int i = 0; i < n; i++) {
             result += this.data[i] * another.data[i];
         }
         return result;
-    }
-
-    public void sort() {
-        Arrays.sort(this.data);
-    }
-
-    public int max() {
-        int max = Integer.MIN_VALUE;
-        for (int i : this.data) {
-            if (i > max) {
-                max = i;
-            }
-        }
-        return max;
     }
 
     public void print() {
@@ -69,7 +45,7 @@ public class Vector {
 
     @Override
     public String toString() {
-        return this.n < 6 ? Arrays.toString(this.data) : "Output is too cumbersome.";
+        return this.n < 6 ? Arrays.toString(this.data) : "Output is too huge.";
     }
 
 }

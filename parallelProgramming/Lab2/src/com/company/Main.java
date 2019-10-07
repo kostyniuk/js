@@ -1,16 +1,13 @@
 package com.company;
 
 /**
- *         Assignment #2
- *    Student: Andrew Logvinchuk
- *    Group:   IO-41
- *    Date:    19/09/2016
  *
- *    F1 = ((A + B)*(C*(MA*ME))) 1.17 d = (A * ((B + C)*(MA*ME))
- *    F2 = SORT(TRANS(MF)*MK) 2.10 MK = MA*(MA*MZ) + TRANS(MB)]
- *    F3 = MAX((MO*MP)*R + MS*S) 3.7 O = (P+R)*(MS*MT)
+ *    F1 = (A * ((B + C)*(MA*ME)) 1.17
+ *    F2 = MA*(MA*MZ) + TRANS(MB) 2.10
+ *    F3 = (P+R)*(MS*MT) 3.7
  *
  */
+
 public class Main {
 
     public static final int N = 5;
