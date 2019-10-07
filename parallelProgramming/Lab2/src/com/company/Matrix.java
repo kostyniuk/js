@@ -3,9 +3,6 @@ package com.company;
 import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Created by Andrew on 18-Sep-16.
- */
 public class Matrix {
 
     private int[][] data;
@@ -26,52 +23,52 @@ public class Matrix {
         }
     }
 
-    public Matrix add(Matrix that) {
-        if (this.n != that.n)
+    public Matrix add(Matrix another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions!");
         Matrix result = new Matrix(this.n, false);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                result.data[i][j] = this.data[i][j] + that.data[i][j];
+                result.data[i][j] = this.data[i][j] + another.data[i][j];
             }
         }
         return result;
     }
 
-    public Matrix subtract(Matrix that) {
-        if (this.n != that.n)
+    public Matrix subtract(Matrix another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions!");
         Matrix result = new Matrix(this.n, false);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                result.data[i][j] = this.data[i][j] - that.data[i][j];
+                result.data[i][j] = this.data[i][j] - another.data[i][j];
             }
         }
         return result;
     }
 
-    public Matrix multiply(Matrix that) {
-        if (this.n != that.n)
+    public Matrix multiply(Matrix another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions");
         Matrix result = new Matrix(this.n, false);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < n; k++) {
-                    result.data[i][j] += this.data[i][k] * that.data[k][j];
+                    result.data[i][j] += this.data[i][k] * another.data[k][j];
                 }
             }
         }
         return result;
     }
 
-    public Vector multiply(Vector that) {
-        if (this.n != that.n)
+    public Vector multiply(Vector another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions");
         Vector result = new Vector(this.n, false);
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                result.data[i] += this.data[i][j] * that.data[i];
+                result.data[i] += this.data[i][j] * another.data[i];
             }
         }
         return result;

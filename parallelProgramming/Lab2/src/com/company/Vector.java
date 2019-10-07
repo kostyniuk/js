@@ -3,13 +3,9 @@ package com.company;
 import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Created by Andrew on 18-Sep-16.
- */
 public class Vector {
 
     int[] data;
-
     int n;
 
     public Vector(int n, boolean fill) {
@@ -20,36 +16,35 @@ public class Vector {
             for (int i = 0; i < n; i++) {
                 this.data[i] = rnd.nextInt(10);
             }
-            rnd = null;
         }
     }
 
-    public Vector add(Vector that) {
-        if (this.n != that.n)
+    public Vector add(Vector another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions!");
         Vector result = new Vector(this.n, false);
         for (int i = 0; i < n; i++) {
-            result.data[i] = this.data[i] + that.data[i];
+            result.data[i] = this.data[i] + another.data[i];
         }
         return result;
     }
 
-    public Vector subtract(Vector that) {
-        if (this.n != that.n)
+    public Vector subtract(Vector another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions!");
         Vector result = new Vector(n, false);
         for (int i = 0; i < n; i++) {
-            result.data[i] = this.data[i] - that.data[i];
+            result.data[i] = this.data[i] - another.data[i];
         }
         return result;
     }
 
-    public long dotProduct(Vector that) {
-        if (this.n != that.n)
+    public long dotProduct(Vector another) {
+        if (this.n != another.n)
             throw new IllegalArgumentException("Operands have different dimensions!");
         int result = 0;
         for (int i = 0; i < n; i++) {
-            result += this.data[i] * that.data[i];
+            result += this.data[i] * another.data[i];
         }
         return result;
     }

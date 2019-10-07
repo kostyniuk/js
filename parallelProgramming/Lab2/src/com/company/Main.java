@@ -6,9 +6,9 @@ package com.company;
  *    Group:   IO-41
  *    Date:    19/09/2016
  *
- *    F1 = ((A + B)*(C*(MA*ME)))
- *    F2 = SORT(TRANS(MF)*MK) 2.16
- *    F3 = MAX((MO*MP)*R + MS*S) 3.16
+ *    F1 = ((A + B)*(C*(MA*ME))) 1.17 d = (A * ((B + C)*(MA*ME))
+ *    F2 = SORT(TRANS(MF)*MK) 2.10 MK = MA*(MA*MZ) + TRANS(MB)]
+ *    F3 = MAX((MO*MP)*R + MS*S) 3.7 O = (P+R)*(MS*MT)
  *
  */
 public class Main {
@@ -29,6 +29,7 @@ public class Main {
         t1.join();
         t2.join();
         t3.join();
+
         System.out.println("End");
 
     }

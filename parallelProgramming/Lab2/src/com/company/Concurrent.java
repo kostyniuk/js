@@ -1,8 +1,5 @@
 package com.company;
 
-/**
- * Created by Andrew on 19-Sep-16.
- */
 class F1 extends Thread {
 
     private int n;
@@ -29,7 +26,7 @@ class F1 extends Thread {
     }
 
     private long first(Vector a, Vector b, Vector c, Matrix ma, Matrix me) {
-        return ma.multiply(me).multiply(c).dotProduct(a.add(b));
+        return ma.multiply(me).multiply(b.add(c)).dotProduct(a);
     }
 
 }
@@ -48,16 +45,18 @@ class F2 extends Thread {
     public void run() {
         System.out.println("Thread " + this.getName() + " started!");
 
-        Matrix MF = new Matrix(n, true);
+        Matrix MA = new Matrix(n, true);
+        Matrix MB = new Matrix(n, true);
         Matrix MK = new Matrix(n, true);
+        Matrix MZ = new Matrix(n, true);
 
         System.out.println("F2 results in: ");
-        second(MF, MK).print();
+        second(MK, MA, MZ, MB).print();
         System.out.println("Thread " + this.getName() + " has finished execution!");
     }
 
-    private Matrix second(Matrix mf, Matrix mk) {
-        return mf.transpose().multiply(mk).sort();
+    private Matrix second(Matrix mk, Matrix ma, Matrix mz, Matrix mb) {
+        return ma.multiply(ma.multiply(mz)).add(mb.sort());
     }
 
 }
@@ -73,20 +72,20 @@ class F3 implements Runnable {
     @Override
     public void run() {
         System.out.println("Thread T3 started!");
+        Vector P = new Vector(n, true);
         Vector R = new Vector(n, true);
-        Vector S = new Vector(n, true);
 
-        Matrix MO = new Matrix(n, true);
-        Matrix MP = new Matrix(n, true);
         Matrix MS = new Matrix(n, true);
+        Matrix MT = new Matrix(n, true);
 
-        System.out.printf("F3 results in %d\n", third(MO, MP, MS, R, S));
+        System.out.println("F3 results in \n");
+        third(MS, MT, P, R).print();
         System.out.println("Thread T3 has finished execution!");
 
     }
 
-    long third(Matrix mo, Matrix mp, Matrix ms, Vector r, Vector s) {
-        return mo.multiply(mp).multiply(r).add(ms.multiply(s)).max();
+    private Vector third(Matrix ms, Matrix mt, Vector p, Vector r) {
+        return ms.multiply(mt).multiply(p.add(r));
     }
 
 }
