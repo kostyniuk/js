@@ -11,7 +11,6 @@ namespace CsharpThreads
     {
         const int N = 5;
         public static int counter = 0;
-        public static int s;
         public static Matrix MS1;
         public static Vector S1;
         public static Vector C;
