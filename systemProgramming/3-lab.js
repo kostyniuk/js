@@ -3,12 +3,29 @@
 
 'use strict';
 
-const expression = process.argv[2];
+let expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
-const regex2 = /\d+[\w\d]+/;
+const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_.-]+/;
+let notDetected = [];
 
-console.log(expression.match(regex2));
+//console.log(expression.match(regex2));
+
+const checkRules = (expression) => {
+  let copy = expression;
+  let match;
+  try {
+    match = copy.match(regex2)[0];
+    notDetected.push(match);
+    copy = copy.replace(match, '');
+  } catch (err) {
+    return copy;
+  }
+  return checkRules(copy);
+};
+
+//console.dir(checkRules(expression));
+expression = checkRules(expression);
 
 if (expression.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
@@ -102,9 +119,6 @@ const fix = (symbols, expression) => {
   return multiples;
 };
 
-const str2 = '2gh dsadsa';
-const current = str2.match(regex2);
-console.log(current);
 
 const symbolsUsed = fix(getSymbols(expression, symbols), expression);
 const reservedUsed = getReserved(expression, reserved);
@@ -115,3 +129,4 @@ console.log({ reservedUsed });
 console.log({ symbolsUsed });
 console.log({ identiersUsed });
 console.log({ numbersUsed });
+console.log({ notDetected });
