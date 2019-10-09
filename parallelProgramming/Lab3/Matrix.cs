@@ -72,6 +72,21 @@ namespace CsharpThreads
             return this;
         }
 
+        public int Max()
+        {
+            int max = Int32.MinValue;
+
+            for (int i = 0; i < n; i++)
+            {
+                for(int j = 0; j < n; j++)
+                {
+                    if (data[i, j] > max) max = data[i, j];
+                }
+            }
+            return max;
+        }
+
+
         public Matrix Sort()
         {
             {

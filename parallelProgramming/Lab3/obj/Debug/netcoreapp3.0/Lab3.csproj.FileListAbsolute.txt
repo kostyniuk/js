@@ -9,3 +9,14 @@ D:\KPI\V\parallel_prog_1\Lab3\obj\Debug\netcoreapp3.0\Lab3.AssemblyInfoInputs.ca
 D:\KPI\V\parallel_prog_1\Lab3\obj\Debug\netcoreapp3.0\Lab3.AssemblyInfo.cs
 D:\KPI\V\parallel_prog_1\Lab3\obj\Debug\netcoreapp3.0\Lab3.dll
 D:\KPI\V\parallel_prog_1\Lab3\obj\Debug\netcoreapp3.0\Lab3.pdb
+D:\js\parallelProgramming\Lab3\obj\Debug\netcoreapp3.0\Lab3.csprojAssemblyReference.cache
+D:\js\parallelProgramming\Lab3\obj\Debug\netcoreapp3.0\Lab3.AssemblyInfoInputs.cache
+D:\js\parallelProgramming\Lab3\obj\Debug\netcoreapp3.0\Lab3.AssemblyInfo.cs
+D:\js\parallelProgramming\Lab3\obj\Debug\netcoreapp3.0\Lab3.dll
+D:\js\parallelProgramming\Lab3\obj\Debug\netcoreapp3.0\Lab3.pdb
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.exe
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.deps.json
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.runtimeconfig.json
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.runtimeconfig.dev.json
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.dll
+D:\js\parallelProgramming\Lab3\bin\Debug\netcoreapp3.0\Lab3.pdb
