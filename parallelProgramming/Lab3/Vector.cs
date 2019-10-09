@@ -48,10 +48,11 @@ namespace CsharpThreads
             int max = Int32.MinValue;
             for (int i = 0; i < n; i++)
             {
-                if (data[i] > max) max = data[i];
+                if (this.data[i] > max) max = this.data[i];
             }
             return max;
         }
+
 
         public void Print()
         {
@@ -62,7 +63,7 @@ namespace CsharpThreads
                 {
                     Console.Write(data[i] + ", ");
                 }
-                Console.Write(data[n - 1] + "]");
+                Console.Write(data[n - 1] + "]" + "\n") ;
             }
         }
     }

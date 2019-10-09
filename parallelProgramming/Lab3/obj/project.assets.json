@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\KPI\\V\\parallel_prog_1\\Lab3\\Lab3.csproj",
+      "projectUniqueName": "D:\\js\\parallelProgramming\\Lab3\\Lab3.csproj",
       "projectName": "Lab3",
-      "projectPath": "D:\\KPI\\V\\parallel_prog_1\\Lab3\\Lab3.csproj",
+      "projectPath": "D:\\js\\parallelProgramming\\Lab3\\Lab3.csproj",
       "packagesPath": "C:\\Users\\akost\\.nuget\\packages\\",
-      "outputPath": "D:\\KPI\\V\\parallel_prog_1\\Lab3\\obj\\",
+      "outputPath": "D:\\js\\parallelProgramming\\Lab3\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\akost\\AppData\\Roaming\\NuGet\\NuGet.Config"

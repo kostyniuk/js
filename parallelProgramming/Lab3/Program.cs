@@ -1,13 +1,10 @@
 ﻿﻿using System;
 using System.Threading;
-//          Assignment #3
-//    Student: Andrew Logvinchuk
-//    Group:   IO-41
-//    Date:    28/09/2016
+//          //    
 //
-//    F1 = ((A + B)*(C*(MA*ME)))
-//    F2 = SORT(TRANS(MF)*MK)
-//    F3 = MAX((MO*MP)*R + MS*S)
+//    F1 = ((A + B)*(C*(MA*ME)))  C = A*(MA*ME) + B + D 1.13
+//    F2 = SORT(TRANS(MF)*MK)  2.22 MF = (MG *MH)*(MK + ML)
+//    F3 = MAX((MO*MP)*R + MS*S)  3.23 s = MAX((MO*MP)(R + T))
 namespace CsharpThreads
 { 
     class Program
@@ -35,15 +32,19 @@ namespace CsharpThreads
         static void F1()
         {
             Console.WriteLine("Thread T1 started!");
+           
             Matrix MA = new Matrix(N, true);
             Matrix ME = new Matrix(N, true);
+
             Vector A = new Vector(N, true);
             Vector B = new Vector(N, true);
-            Vector C = new Vector(N, true);
+            Vector D = new Vector(N, true);
 
             Thread.Sleep(1000);
-
-            Console.WriteLine("F1 = " + ((A + B) * ((MA * ME) * C)));
+            Vector C = (MA*ME)*A + B + D;
+            
+            Console.Write("F1 = ");
+            C.Print();
             Console.WriteLine("Thread T1 finished!");
         }
 
@@ -53,10 +54,13 @@ namespace CsharpThreads
 
             Matrix MF = new Matrix(N, true);
             Matrix MK = new Matrix(N, true);
+            Matrix MG = new Matrix(N, true);
+            Matrix MH = new Matrix(N, true);
+            Matrix ML = new Matrix(N, true);
 
             Thread.Sleep(500);
 
-            Matrix F2 = (MF.Transpose() * MK).Sort();
+            Matrix F2 = ((MG * MH) * (MK + ML));
 
             Console.WriteLine("F2 = " + F2);
             Console.WriteLine("Thread T2 finished!");
@@ -68,13 +72,12 @@ namespace CsharpThreads
 
             Matrix MO = new Matrix(N, true);
             Matrix MP = new Matrix(N, true);
-            Matrix MS = new Matrix(N, true);
             Vector R = new Vector(N, true);
-            Vector S = new Vector(N, true);
+            Vector T = new Vector(N, true);
+
 
             Thread.Sleep(1500);
-
-            Console.WriteLine("F3 = " + ((MO * MP) * R + MS * S).Max());
+            Console.WriteLine("F3 = " + ((MO * MP) * (R + T)).Max());
             Console.WriteLine("Thread T3 finished!");
         }
     }
