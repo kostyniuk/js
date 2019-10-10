@@ -7,7 +7,7 @@ let expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
 const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_.-]+/;
-let notDetected = [];
+const notDetected = [];
 
 //console.log(expression.match(regex2));
 
