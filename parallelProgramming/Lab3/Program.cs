@@ -11,7 +11,8 @@ namespace CsharpThreads
     {
         const int N = 5;
         public static int counter = 0;
-        public static int s;
+        public static Matrix MS1;
+        public static Vector S1;
         public static Vector C;
         public static Matrix MF;
 
@@ -20,14 +21,17 @@ namespace CsharpThreads
             Thread t1 = new Thread(new ThreadStart(F1));
             Thread t2 = new Thread(new ThreadStart(F2));
             Thread t3 = new Thread(new ThreadStart(F3));
+            Thread t4 = new Thread(new ThreadStart(F4));
 
             t1.Priority = ThreadPriority.BelowNormal;
             t2.Priority = ThreadPriority.Highest;
             t3.Priority = ThreadPriority.Normal;
+            t4.Priority = ThreadPriority.AboveNormal;
 
             t1.Start();
             t2.Start();
             t3.Start();
+            t4.Start();
 
         }
 
@@ -77,12 +81,10 @@ namespace CsharpThreads
 
             Matrix MO = new Matrix(N, true);
             Matrix MP = new Matrix(N, true);
-            Vector R = new Vector(N, true);
-            Vector T = new Vector(N, true);
 
             Thread.Sleep(1500);
 
-            s = ((MO * MP) * (R + T)).Max();
+            MS1 = MO * MP;
             
             Console.WriteLine("Thread T3 finished!");
             
@@ -90,14 +92,31 @@ namespace CsharpThreads
 
         }
 
+        static void F4()
+        {
+            Console.WriteLine("Thread T4 started!");
+
+            Vector R = new Vector(N, true);
+            Vector T = new Vector(N, true);
+
+            Thread.Sleep(1500);
+
+            S1 = R + T;
+            
+            Console.WriteLine("Thread T4 finished!");
+            
+            logging();
+
+        }
+
         static public void logging () {
             counter++;
-            if(counter == 3) {
+            if(counter == 4) {
             Console.Write("F1 = ");
             C.Print();
             Console.WriteLine("F2 = ");
             MF.Print();
-            Console.Write("F3 = " + s);
+            Console.Write("F3 = " + (MS1 * S1).Max());
             }
         } 
     }
