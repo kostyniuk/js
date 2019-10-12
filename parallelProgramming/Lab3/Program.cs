@@ -112,6 +112,10 @@ namespace CsharpThreads
         static public void logging () {
             counter++;
             if(counter == 4) {
+            Console.WriteLine();
+            Console.WriteLine("---Results---");
+            Console.WriteLine();
+
             Console.Write("F1 = ");
             C.Print();
             Console.WriteLine("F2 = ");
