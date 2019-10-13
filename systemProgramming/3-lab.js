@@ -1,15 +1,10 @@
-// TODO
-// new idintifiers handler!!
-
 'use strict';
 
 let expression = process.argv[2];
 const regex = /[_a-zA-Z][_a-zA-Z0-9]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
-const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_.-]+/;
+const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]+/; //-
 const notDetected = [];
-
-//console.log(expression.match(regex2));
 
 const checkRules = (expression) => {
   let copy = expression;
@@ -24,7 +19,6 @@ const checkRules = (expression) => {
   return checkRules(copy);
 };
 
-//console.dir(checkRules(expression));
 expression = checkRules(expression);
 
 if (expression.match(cyrillicPattern)) {
@@ -118,7 +112,6 @@ const fix = (symbols, expression) => {
   allentries(singles, i, expression);
   return multiples;
 };
-
 
 const symbolsUsed = fix(getSymbols(expression, symbols), expression);
 const reservedUsed = getReserved(expression, reserved);
