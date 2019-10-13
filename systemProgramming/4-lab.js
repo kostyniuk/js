@@ -212,7 +212,16 @@ const getIndexes = (str, hash) => {
           }
         }
         if (!name) {
-          name = 'ID';
+          for(const arr in hash) {
+            //console.log(arr);
+            const array = hash[arr];
+            //console.log(array);
+            if (array.includes(token)) {
+              //console.log(token, array, arr);
+              name = arr;
+            }
+          }
+          name = name || 'ID';
           type = 'ID';
         }
         result.push({ token, index, length, type, name });
@@ -260,9 +269,10 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-//console.log(lexems);
+console.log(lexems);
 
 const checking = (lexTable, index) => {
+  if (index === lexTable.length) process.exit(0)
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexTable.length === index) return;
@@ -280,6 +290,12 @@ const checking = (lexTable, index) => {
       index++;
       checking(lexTable, index);
     }
+    if (lexTable[index + 1].type === 'ID') {
+      console.log('id right after id error', lexTable[index + 1]);
+      process.exit(0);
+    }
+
+
     if (lexTable[index + 1].type === 'parenthesis-operator') {
       const isBrOpened = isOpenBracketBefore(lexTable, index);
       if (isBrOpened.leftBrIsOpen && isBrOpened.leftPrIsOpen) {
@@ -308,11 +324,10 @@ const checking = (lexTable, index) => {
       if (lexTable[index + 1].name === 'T_LEFT_PARENTHESIS' ||
       lexTable[index + 1].name === 'T_LEFT_BRACKET') {
         index++;
-        console.log('here');
         checking(lexTable, index);
       }
-      console.log(lexTable[index], index)
-      console.log('error')
+      console.log(lexTable[index], index);
+      console.log('error');
       process.exit(0);
     }
   }
@@ -322,8 +337,7 @@ const checking = (lexTable, index) => {
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
-    }
-    else {
+    } else {
       console.log('error', lexTable[index + 1]);
       process.exit(0);
     }
@@ -333,23 +347,37 @@ const checking = (lexTable, index) => {
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
-    }
-    else {
+    } else {
       console.log('error', lexTable[index + 1]);
       process.exit(0);
     }
   }
   if (lexem.type === 'parenthesis-operator') {
     console.log('parenthesis-operator', lexem);
-    if (lexem.name === 'T_LEFT_BRACKET' || lexem.name === 'T_LEFT_PARENTHESIS')
+    if (lexem.name === 'T_LEFT_BRACKET' ||
+    lexem.name === 'T_LEFT_PARENTHESIS') {
+      if (lexTable[index - 1].name === 'integers' || lexTable[index - 1].name === 'floats') {
+        console.log('error: number and parenthesis', lexTable[index - 1]);
+        process.exit(0)
+      }
       if (lexTable[index + 1].type === 'ID') {
         index++;
         checking(lexTable, index);
+      } else {
+        console.log('error dasa', lexTable[index + 1]);
+        process.exit(0);
       }
-      else {
+    }
+    if (lexem.name === 'T_RIGHT_BRACKET' ||
+    lexem.name === 'T_RIGHT_PARENTHESIS') {
+      if (lexTable[index + 1].type === 'ID') {
         console.log('error', lexTable[index + 1]);
         process.exit(0);
       }
+    } else {
+      index++;
+      checking(lexTable, index);
+    }
   }
   if (lexem.type === 'condition_operator') {
     console.log('condition_operator', lexem);
