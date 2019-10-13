@@ -2,8 +2,8 @@
 const fs = require('fs');
 
 const data = fs.readFileSync('./4-tokens.json', 'utf8');
-let tokens = JSON.parse(data).tokens;
-let tokenss = JSON.parse(data).tokens;
+const tokens = JSON.parse(data).tokens;
+const tokenss = JSON.parse(data).tokens;
 
 //console.log(tokenss.symbol)
 
@@ -128,7 +128,37 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const str = 'if; b=2.5*a[2n+2]; b=d;';
+const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
+const cyrillicPattern = /[\u0400-\u04FF]/;
+const notDetected = [];
+
+const checkRules = (expression) => {
+  let copy = expression;
+  let match;
+  try {
+    match = copy.match(regex2)[0];
+    notDetected.push(match);
+    copy = copy.replace(match, '');
+  } catch (err) {
+    return copy;
+  }
+  return checkRules(copy);
+};
+
+
+
+let str = process.argv[2];
+console.log(str);
+if (str.match(cyrillicPattern)) {
+  console.log('Something went wrong.\nTry another expression.');
+  process.exit(1);
+}
+str = checkRules(str);
+if (notDetected[0]) {
+  console.log(notDetected);
+  console.log('Something went wrong.\nTry another expression.');
+  process.exit(1);
+}
 
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
@@ -151,6 +181,8 @@ integers = eliminateFloatsFromInts(floats, integers);
 const keyWords = getReserved(str, reserved);
 ids = deleteCopies(ids.flat(), keyWords);
 
+
+//console.log(getSymbols(str, symbolsAll));
 const symbolsUsed = fix(getSymbols(str, symbolsAll), str);
 
 const getIndexes = (str, hash) => {
@@ -171,7 +203,7 @@ const getIndexes = (str, hash) => {
           for (const op in tokenss.symbol) {
             if (tokenss.symbol[op][token]) type = op;
           }
-          
+
         } else {
           indexToken = keywordsAll.indexOf(token);
           name = keywordsTokenNames[indexToken];
@@ -192,6 +224,24 @@ const getIndexes = (str, hash) => {
   return result;
 };
 
+const isOpenBracketBefore = (lexemTable, index) => {
+  let lBr = 0;
+  let rBr = 0;
+  let lPr = 0;
+  let rPr = 0;
+  for (let i = 0; i < index; i++) {
+    //console.log(lexemTable[i].name);
+    if (lexemTable[i].name === 'T_LEFT_BRACKET') lBr++;
+    if (lexemTable[i].name === 'T_RIGHT_BRACKET') rBr++;
+    if (lexemTable[i].name === 'T_LEFT_PARENTHESIS') lPr++;
+    if (lexemTable[i].name === 'T_RIGHT_PARENTHESIS') rPr++;
+  }
+  //console.log(lBr, rBr, lPr, rPr);
+  const leftBrIsOpen = (lBr - rBr > 0);
+  const leftPrIsOpen = (lPr - rPr > 0);
+  return { leftBrIsOpen, leftPrIsOpen };
+};
+
 const myTokens = {
   keyWords,
   ids,
@@ -201,15 +251,7 @@ const myTokens = {
 };
 
 const lexems = getIndexes(str, myTokens);
-//console.log(lexems);
-// const hash = {
-//   marcus: 'Marcus Aur',
-//   mao: 'Mao Dzedzun'
-// };
 
-// for (const token in tokens) {
-//   console.log(token);
-// }
 lexems.sort((a, b) => {
   const keyA = a.index;
   const keyB = b.index;
@@ -218,4 +260,117 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-console.log(lexems);
+//console.log(lexems);
+
+const checking = (lexTable, index) => {
+  const lexem = lexTable[index];
+  if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
+    if (lexTable.length === index) return;
+    console.log('new expression');
+
+  }
+
+  if (lexem.type === 'ID') {
+    console.log('ID', lexem);
+    if (lexTable[index + 1].type === 'assignment_operator' ||
+      lexTable[index + 1].type === 'unary-operator' ||
+      lexTable[index + 1].type === 'binary-operator' ||
+      lexTable[index + 1].name === 'unary-operator' ||
+      lexTable[index + 1].type === 'unary-operator') {
+      index++;
+      checking(lexTable, index);
+    }
+    if (lexTable[index + 1].type === 'parenthesis-operator') {
+      const isBrOpened = isOpenBracketBefore(lexTable, index);
+      if (isBrOpened.leftBrIsOpen && isBrOpened.leftPrIsOpen) {
+        if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
+        lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+          index++;
+          checking(lexTable, index);
+        }
+      }
+      if (isBrOpened.leftBrIsOpen) {
+        if (lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
+          index++;
+          checking(lexTable, index);
+        }
+      }
+      if (isBrOpened.leftPrIsOpen) {
+        if (lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+          index++;
+          checking(lexTable, index);
+        }
+      }
+      if (lexTable[index + 1].name === 'T_SEMICOLON') {
+        index++;
+        checking(lexTable, index);
+      }
+      if (lexTable[index + 1].name === 'T_LEFT_PARENTHESIS' ||
+      lexTable[index + 1].name === 'T_LEFT_BRACKET') {
+        index++;
+        console.log('here');
+        checking(lexTable, index);
+      }
+      console.log(lexTable[index], index)
+      console.log('error')
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'assignment_operator') {
+    console.log('assignment_operator', lexem);
+
+    if (lexTable[index + 1].type === 'ID') {
+      index++;
+      checking(lexTable, index);
+    }
+    else {
+      console.log('error', lexTable[index + 1]);
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'unary-operator') {
+    console.log('unary-operator', lexem);
+    if (lexTable[index + 1].type === 'ID') {
+      index++;
+      checking(lexTable, index);
+    }
+    else {
+      console.log('error', lexTable[index + 1]);
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'parenthesis-operator') {
+    console.log('parenthesis-operator', lexem);
+    if (lexem.name === 'T_LEFT_BRACKET' || lexem.name === 'T_LEFT_PARENTHESIS')
+      if (lexTable[index + 1].type === 'ID') {
+        index++;
+        checking(lexTable, index);
+      }
+      else {
+        console.log('error', lexTable[index + 1]);
+        process.exit(0);
+      }
+  }
+  if (lexem.type === 'condition_operator') {
+    console.log('condition_operator', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  if (lexem.type === 'selection-statement') {
+    console.log('selection-statement', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  if (lexem.type === 'iteration-statement') {
+    console.log('iteration-statement', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  return 'konec';
+};
+
+console.log(checking(lexems, 0));
+
+
+
+//isOpenBracketBefore(lexems, lexems.length);
