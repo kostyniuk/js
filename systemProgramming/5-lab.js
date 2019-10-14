@@ -105,7 +105,8 @@ if (notDetected[0]) {
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
   'goto', 'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
-  'continue', 'Enumerator', 'sizeof', 'struct', 'typedev', 'union', 'volatile', 'begin', 'end', 'to'];
+  'continue', 'Enumerator', 'sizeof', 'struct', 'typedev', 'union',
+  'volatile', 'begin', 'end', 'to'];
 
 let expressions = str.split(';');
 if (expressions.length > 1) expressions = expressions.slice(0, -1);
@@ -216,7 +217,6 @@ const isLoopCorrect = (lexems) => {
   const table = lexems;
   table.forEach((lexem, index, arr) => {
     if (lexem.name === 'T_TO') {
-      console.log(lexem)
       if (arr[index - 1].type !== 'ID') {
         errorLogging('ERROR: Not ID before to in FOR loop statement');
 
@@ -236,20 +236,34 @@ const isLoopCorrect = (lexems) => {
       if (arr[index + 3].name !== 'T_BEGIN') {
         errorLogging('ERROR: Not found BEGIN in FOR loop statement');
       }
-      
+
     }
     if (lexem.name === 'T_FOR') {
       if (arr[index + 4].name !== 'T_TO') {
-        console.log(arr[index + 3]);
         errorLogging('ERROR: No TO keyword found in appropriate position in FOR loop statement');
       }
     }
   }
   );
+  return 'Your syntax is correct';
 };
 
+
 console.log(isLoopCorrect(lexems));
-process.exit(0);
+const buildTree = table => {
+  const tree = [];
+  for (const lexem of table) {
+    if (lexem.name === 'T_FOR') tree.push('for_loop statement');
+    if (lexem.name === 'T_IF') tree.push('if_node');
+    if (lexem.name === 'T_THEN') tree.push('the_node');
+  }
+  return tree;
+};
+
+//console.log(lexems);
+const tree = buildTree(lexems);
+console.log({ tree });
+process.exit(0)
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) process.exit(0);
@@ -268,7 +282,7 @@ const checking = (lexTable, index) => {
   }
 
   if (lexem.type === 'ID') {
-    console.log('ID', lexem);
+    //console.log('ID', lexem);
     if (lexTable[index + 1].type === 'assignment_operator' ||
       lexTable[index + 1].type === 'unary-operator' ||
       lexTable[index + 1].type === 'binary-operator') {
@@ -276,14 +290,16 @@ const checking = (lexTable, index) => {
       checking(lexTable, index);
     }
 
-    if (lexTable[index + 1].name === 'T_TO' ||
-    lexTable[index + 1].name === 'T_BEGIN') {
+    if (lexTable[index + 1].name === 'T_TO') {
       index++;
       checking(lexTable, index);
     }
-    console.log('should be :=', lexTable[index]);
+    if (lexTable[index + 1].name === 'T_DO') {
+      index++;
+      checking(lexTable, index);
+    }
     if (lexTable[index + 1].type === 'ID') {
-      console.log('id right after id error', lexTable[index], lexTable[index + 1]);
+      console.log('ERROR: Id right after id error', lexTable[index], lexTable[index + 1]);
       process.exit(0);
     }
 
@@ -324,7 +340,7 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'assignment_operator') {
-    console.log('assignment_operator', lexem);
+    //console.log('assignment_operator', lexem);
 
     if (lexTable[index + 1].type === 'ID') {
       index++;
@@ -336,7 +352,7 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'unary-operator') {
-    console.log('unary-operator', lexem);
+    //console.log('unary-operator', lexem);
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
@@ -346,26 +362,26 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'parenthesis-operator') {
-    console.log('parenthesis-operator', lexem);
+    //console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
       if (lexTable[index - 1].name === 'integers' ||
       lexTable[index - 1].name === 'floats') {
-        console.log('error: number and parenthesis', lexTable[index - 1]);
+        console.log('ERROR: number and parenthesis', lexTable[index - 1]);
         process.exit(0);
       }
       if (lexTable[index + 1].type === 'ID') {
         index++;
         checking(lexTable, index);
       } else {
-        console.log('error dasa', lexTable[index + 1]);
+        console.log('ERROR: Not ID after opening bracket', lexTable[index + 1]);
         process.exit(0);
       }
     }
     if (lexem.name === 'T_RIGHT_BRACKET' ||
     lexem.name === 'T_RIGHT_PARENTHESIS') {
       if (lexTable[index + 1].type === 'ID') {
-        console.log('errorfsdfsd ', lexTable[index + 1]);
+        console.log('ERROR: Cant be id right after closinf bracket', lexTable[index + 1]);
         process.exit(0);
       }
     } else {
@@ -374,22 +390,22 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'condition_operator') {
-    console.log('condition_operator', lexem);
+    //console.log('condition_operator', lexem);
     index++;
     checking(lexTable, index);
   }
   if (lexem.type === 'selection-statement') {
-    console.log('selection-statement', lexem);
+    //console.log('selection-statement', lexem);
     index++;
     checking(lexTable, index);
   }
   if (lexem.type === 'iteration-statement') {
 
-    console.log('iteration-statement', lexem);
+    //console.log('iteration-statement', lexem);
     index++;
     checking(lexTable, index);
   }
-  return 'konec';
+  return 'End';
 };
 
 console.log(checking(lexems, 0));
