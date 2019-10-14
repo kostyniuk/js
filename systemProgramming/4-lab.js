@@ -229,9 +229,6 @@ const myTokens = {
   symbolsUsed
 };
 
-console.log(myTokens);
-process.exit(0);
-
 const lexems = getIndexes(str, myTokens);
 
 lexems.sort((a, b) => {
@@ -242,9 +239,6 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-
-console.log(lexems);
-process.exit(0);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) process.exit(0);
