@@ -1,5 +1,6 @@
 'use strict';
 const fs = require('fs');
+const getAllSymbols = require('./4-symbols')
 
 const data = fs.readFileSync('./4-tokens.json', 'utf8');
 const tokens = JSON.parse(data).tokens;
@@ -27,31 +28,6 @@ for (const operators in tokens.keyword) {
 
 keywordsAll = Object.keys(tokenKeywords);
 const keywordsTokenNames = Object.values(tokenKeywords);
-
-/*b=2*a[n]; b=d;
-expression, assignment-operator, expression, unary-operator, expression
- expression assignment_operator, expression;
-<expression> ::= <assignment-expression> | <expression> , <assignment-expression>
-<assignment-expression> ::= <conditional-expression> | <unary-expression> <assignment-operator> <assignment-expression>
- <assignment-operator> ::= =
-| *=
-| /=
-| %=
-| +=
-| -=
-| <<=
-| >>=
-| &=
-| ^=
-| |=
-
-<unary-operator> ::= &
-| *
-| +
-| -
-| ~
-| !
-*/
 
 const getSymbols = (str, arrOfSymbols) => {
   const symbolsUsed = [];
@@ -167,7 +143,6 @@ const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
 
 let expressions = str.split(';').slice(0, -1);
 expressions = expressions.map(el => el.trim());
-console.log({ expressions });
 
 let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
 
@@ -182,9 +157,11 @@ const keyWords = getReserved(str, reserved);
 ids = deleteCopies(ids.flat(), keyWords);
 
 
-//console.log(getSymbols(str, symbolsAll));
-const symbolsUsed = fix(getSymbols(str, symbolsAll), str);
+const singleSymb = symbolsAll.filter(el => el.length === 1);
+const multipleSymb = symbolsAll.filter(el => el.length === 2);
 
+//const symbolsUsed = fix(getSymbols(str, symbolsAll), str);
+const symbolsUsed = getAllSymbols(str, singleSymb, multipleSymb);
 const getIndexes = (str, hash) => {
   const result = [];
 
@@ -212,12 +189,9 @@ const getIndexes = (str, hash) => {
           }
         }
         if (!name) {
-          for(const arr in hash) {
-            //console.log(arr);
+          for (const arr in hash) {
             const array = hash[arr];
-            //console.log(array);
             if (array.includes(token)) {
-              //console.log(token, array, arr);
               name = arr;
             }
           }
@@ -239,17 +213,16 @@ const isOpenBracketBefore = (lexemTable, index) => {
   let lPr = 0;
   let rPr = 0;
   for (let i = 0; i < index; i++) {
-    //console.log(lexemTable[i].name);
     if (lexemTable[i].name === 'T_LEFT_BRACKET') lBr++;
     if (lexemTable[i].name === 'T_RIGHT_BRACKET') rBr++;
     if (lexemTable[i].name === 'T_LEFT_PARENTHESIS') lPr++;
     if (lexemTable[i].name === 'T_RIGHT_PARENTHESIS') rPr++;
   }
-  //console.log(lBr, rBr, lPr, rPr);
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
   return { leftBrIsOpen, leftPrIsOpen };
 };
+
 
 const myTokens = {
   keyWords,
@@ -269,10 +242,9 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-console.log(lexems);
 
 const checking = (lexTable, index) => {
-  if (index === lexTable.length) process.exit(0)
+  if (index === lexTable.length) process.exit(0);
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexTable.length === index) return;
@@ -356,9 +328,10 @@ const checking = (lexTable, index) => {
     console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
-      if (lexTable[index - 1].name === 'integers' || lexTable[index - 1].name === 'floats') {
+      if (lexTable[index - 1].name === 'integers' ||
+      lexTable[index - 1].name === 'floats') {
         console.log('error: number and parenthesis', lexTable[index - 1]);
-        process.exit(0)
+        process.exit(0);
       }
       if (lexTable[index + 1].type === 'ID') {
         index++;
@@ -398,7 +371,3 @@ const checking = (lexTable, index) => {
 };
 
 console.log(checking(lexems, 0));
-
-
-
-//isOpenBracketBefore(lexems, lexems.length);
