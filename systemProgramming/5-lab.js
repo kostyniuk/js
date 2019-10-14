@@ -43,10 +43,17 @@ const eliminateFloatsFromInts = (arrFl, arrInt) => {
 
 const getReserved = (str, arrOfReserved) => {
   const reservedUsed = [];
-  for (const reserved in arrOfReserved) {
-    if (str.includes(arrOfReserved[reserved]))
-      reservedUsed.push(arrOfReserved[reserved]);
+  for(let i =0; i < arrOfReserved.length; i++) {
+    if(str.includes(arrOfReserved[i])) {
+      const index = str.indexOf(arrOfReserved[i]);
+      const token = arrOfReserved[i];
+      reservedUsed.push(token)
+      str = str.replace(token, '');
+      i--;
+    }
   }
+
+  // }
   return reservedUsed;
 };
 
@@ -88,20 +95,18 @@ const errorLogging = (issue) => {
 let str = process.argv[2];
 str = str.toLowerCase();
 if (str.match(cyrillicPattern)) {
-  console.log('Something went wrong.\nTry another expression.');
-  process.exit(1);
+  errorLogging('Something went wrong.\nTry another expression.');
 }
 str = checkRules(str);
 if (notDetected[0]) {
   console.log(notDetected);
-  console.log('Something went wrong.\nTry another expression.');
-  process.exit(1);
+  errorLogging('Something went wrong.\nTry another expression.');
 }
 
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
   'goto', 'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
-  'continue', 'Enumerator', 'sizeof', 'struct', 'typedev', 'union', 'volatile', 'do', 'begin', 'end', 'to'];
+  'continue', 'Enumerator', 'sizeof', 'struct', 'typedev', 'union', 'volatile', 'begin', 'end', 'to'];
 
 let expressions = str.split(';');
 if (expressions.length > 1) expressions = expressions.slice(0, -1);
@@ -195,6 +200,8 @@ const myTokens = {
   symbolsUsed
 };
 
+// console.log(myTokens);
+// process.exit(0);
 
 const lexems = getIndexes(str, myTokens);
 
@@ -206,40 +213,37 @@ lexems.sort((a, b) => {
   return 0;
 });
 
-
-
-
 const isLoopCorrect = (lexems) => {
   const table = lexems;
   table.forEach((lexem, index, arr) => {
     if (lexem.name === 'T_TO') {
+      console.log(lexem)
       if (arr[index - 1].type !== 'ID') {
-        console.log('ERROR: Not ID before to in FOR loop statement');
-        process.exit(0);
+        errorLogging('ERROR: Not ID before to in FOR loop statement');
+
       }
       if (arr[index - 2].name !== 'T_EQUAL') {
-        console.log('ERROR: Not Equality symbol found in FOR loop statement');
-        process.exit(0);
+        errorLogging('ERROR: Not Equality symbol found in FOR loop statement');
       }
       if (arr[index - 3].type !== 'ID') {
-        console.log('ERROR: Not appropriate id as start in FOR loop statement');
-        process.exit(0);
+        errorLogging('ERROR: Not appropriate id as start in FOR loop statement');
       }
       if (arr[index - 4].name !== 'T_FOR') {
-        console.log(arr[index - 3]);
-        console.log('ERROR: No FOR found at needed position found in FOR loop statement');
-        process.exit(0);
+        errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
       }
       if (arr[index + 1].type !== 'ID') {
-        console.log('ERROR: Not found appropriate high limit in FOR loop statement');
-        process.exit(0);
+        errorLogging('ERROR: Not found appropriate high limit in FOR loop statement');
       }
-      if (arr[index + 1].type !== 'ID') {
-        console.log('ERROR: Not found appropriate high limit in FOR loop statement');
-        process.exit(0);
+      if (arr[index + 3].name !== 'T_BEGIN') {
+        errorLogging('ERROR: Not found BEGIN in FOR loop statement');
       }
-      //for(let i = 0; i < index; i++) {
-
+      
+    }
+    if (lexem.name === 'T_FOR') {
+      if (arr[index + 4].name !== 'T_TO') {
+        console.log(arr[index + 3]);
+        errorLogging('ERROR: No TO keyword found in appropriate position in FOR loop statement');
+      }
     }
   }
   );

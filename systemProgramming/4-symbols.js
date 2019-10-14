@@ -102,8 +102,8 @@ module.exports = (expression, singles, multiples) => {
   });
 
   const tokensArr = [];
-  for(const record of result) {
-    tokensArr.push(record.token)
+  for (const record of result) {
+    tokensArr.push(record.token);
   }
   return tokensArr;
 };

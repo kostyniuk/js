@@ -6,8 +6,6 @@ const data = fs.readFileSync('./4-tokens.json', 'utf8');
 const tokens = JSON.parse(data).tokens;
 const tokenss = JSON.parse(data).tokens;
 
-//console.log(tokenss.symbol)
-
 let symbolsAll = {};
 const tokesSymb = {};
 
@@ -231,6 +229,9 @@ const myTokens = {
   symbolsUsed
 };
 
+console.log(myTokens);
+process.exit(0);
+
 const lexems = getIndexes(str, myTokens);
 
 lexems.sort((a, b) => {
@@ -241,6 +242,9 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
+
+console.log(lexems);
+process.exit(0);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) process.exit(0);
