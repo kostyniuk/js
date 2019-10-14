@@ -213,6 +213,66 @@ lexems.sort((a, b) => {
   return 0;
 });
 
+//console.log(lexems);
+
+const howManyEnds = lexems => {
+  let start = 0;
+  let end = 0;
+  lexems.forEach((lexem, index) => {
+    if(lexem.name === 'T_FOR' || lexem.name === 'T_IF') {
+      start++;
+    }
+    if(lexem.name === 'T_END') {
+      end++;
+    }
+  });
+  return start - end;
+};
+
+const loggingEndErr = n => {
+  if (!n) return;
+  if (n > 0) {
+    errorLogging('Not enough ENDs');
+  } else {
+    errorLogging('So many ENDS');
+  }
+}
+
+loggingEndErr(howManyEnds(lexems));
+
+const isIfCorrect = (lexems) => {
+  const table = lexems;
+  table.forEach((lexem, index, arr) => {
+    if (lexem.name === 'T_THEN') {
+      if (arr[index - 1].name !== 'T_RIGHT_PARENTHESIS') {
+        errorLogging('ERROR: \')\' missed  expression in IF statement');
+      }
+      if (arr[index - 2].type !== 'ID') {
+        errorLogging('ERROR: Expression is wrong in IF statement');
+      }
+      if (arr[index + 1].name !== 'T_BEGIN') {
+        errorLogging('ERROR: BEGIN is missed in IF statement');
+      }
+    }
+    if (lexem.name === 'T_IF') {
+      if (index !== 0) {
+        if (arr[index - 1].name !== 'T_SEMICOLON') {
+          errorLogging('ERROR: IF statement should be in approapiate position');
+        }
+      }
+      if (arr[index + 1].name !== 'T_LEFT_PARENTHESIS') {
+        errorLogging('ERROR: \'(\' missed  expression in IF statement');
+      }
+      if (arr[index + 2].type !== 'ID') {
+        errorLogging('ERROR: Expression is wrong in IF statement');
+      }
+    }
+  }
+  );
+  return 'Your syntax is correct';
+};
+
+
 const isLoopCorrect = (lexems) => {
   const table = lexems;
   table.forEach((lexem, index, arr) => {
@@ -248,10 +308,14 @@ const isLoopCorrect = (lexems) => {
   return 'Your syntax is correct';
 };
 
-
-console.log(isLoopCorrect(lexems));
+const getTreeFormated = tree => {
+  for(let i = 0; i < tree.length; i++) {
+    console.log(' '.repeat(i), `${tree[i]}`);
+  }
+};
+//console.log(isLoopCorrect(lexems));
 const buildTree = table => {
-  const tree = [];
+  const tree = ['Tree:'];
   for (const lexem of table) {
     if (lexem.name === 'T_FOR') tree.push('for_loop statement');
     if (lexem.name === 'T_IF') tree.push('if_node');
@@ -261,9 +325,10 @@ const buildTree = table => {
 };
 
 //console.log(lexems);
+isIfCorrect(lexems);
 const tree = buildTree(lexems);
-console.log({ tree });
-process.exit(0)
+getTreeFormated(tree);
+process.exit(0);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) process.exit(0);
@@ -408,4 +473,4 @@ const checking = (lexTable, index) => {
   return 'End';
 };
 
-console.log(checking(lexems, 0));
+//console.log(checking(lexems, 0));
