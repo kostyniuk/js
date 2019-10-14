@@ -124,7 +124,6 @@ const checkRules = (expression) => {
 
 
 let str = process.argv[2];
-console.log(str);
 if (str.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
@@ -247,8 +246,12 @@ const checking = (lexTable, index) => {
   if (index === lexTable.length) process.exit(0);
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
-    if (lexTable.length === index) return;
-    console.log('new expression');
+    //if (lexTable.length === index) return;
+    if (lexem.type !== 'ID') {
+      console.log('Expression cant start with the lexem.');
+      console.log(lexem);
+      process.exit(0);
+    }
 
   }
 
