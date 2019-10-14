@@ -43,11 +43,10 @@ const eliminateFloatsFromInts = (arrFl, arrInt) => {
 
 const getReserved = (str, arrOfReserved) => {
   const reservedUsed = [];
-  for(let i =0; i < arrOfReserved.length; i++) {
-    if(str.includes(arrOfReserved[i])) {
-      const index = str.indexOf(arrOfReserved[i]);
+  for (let i = 0; i < arrOfReserved.length; i++) {
+    if (str.includes(arrOfReserved[i])) {
       const token = arrOfReserved[i];
-      reservedUsed.push(token)
+      reservedUsed.push(token);
       str = str.replace(token, '');
       i--;
     }
