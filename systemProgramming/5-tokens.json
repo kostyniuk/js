@@ -30,14 +30,23 @@
                 "[" : "T_LEFT_BRACKET",
                 "]" : "T_RIGHT_BRACKET",
                 "(" : "T_LEFT_PARENTHESIS",
-                ")" : "T_RIGHT_PARANTHESIS",
+                ")" : "T_RIGHT_PARENTHESIS",
                 ";" : "T_SEMICOLON"
+            },
+            "comparison-operator" : {
+                ">" : "T_IS_GREATER",
+                "<" : "T_IS_SMALLER",
+                ">=" : "T_IS_GREATER_OR_EQUAL",
+                "<=" : "T_IS_SMALLER_OR_EQUAL",
+                "==" : "T_IS_EQUAL",
+                "<>" : "T_IS_NOT_EQUAL"
             }
         },
         "keyword" : {
             "condition_operator" : {
                 "if" : "T_IF", 
                 "else" : "T_ELSE",
+                "then" : "T_THEN",
                 "switch" : "T_SWITCH",
                 "case": "T_CASE",
                 "default": "T_DEFAULT" 
