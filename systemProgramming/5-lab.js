@@ -253,31 +253,30 @@ const isIfCorrect = (lexems) => {
 const isLoopCorrect = (lexems) => {
   const table = lexems;
   table.forEach((lexem, index, arr) => {
-    if (lexem.name === 'T_TO') {
-      if (arr[index - 1].type !== 'ID') {
-        errorLogging('ERROR: Not ID before to in FOR loop statement');
 
-      }
-      if (arr[index - 2].name !== 'T_EQUAL') {
-        errorLogging('ERROR: Not Equality symbol found in FOR loop statement');
-      }
-      if (arr[index - 3].type !== 'ID') {
+    if (lexem.name === 'T_FOR') {
+      if (arr[index + 1].type !== 'ID') {
         errorLogging('ERROR: Not appropriate id as start in FOR loop statement');
       }
+      if (arr[index + 2].name !== 'T_EQUAL') {
+        errorLogging('ERROR: Not Equality symbol found in FOR loop statement');
+      }
+      if (arr[index + 1].type !== 'ID') {
+        errorLogging('ERROR: Not appropriate id as end in FOR loop statement');
+      }
+      if (arr[index + 4].name !== 'T_TO') {
+        errorLogging('ERROR: No TO keyword found in appropriate position in FOR loop statement');
+      }
+    }
+    if (lexem.name === 'T_TO') {
       if (arr[index - 4].name !== 'T_FOR') {
         errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
       }
-      if (arr[index + 1].type !== 'ID') {
-        errorLogging('ERROR: Not found appropriate high limit in FOR loop statement');
+      if (arr[index + 2].name !== 'T_DO') {
+        errorLogging('ERROR: No Do found in FOR loop statement');
       }
       if (arr[index + 3].name !== 'T_BEGIN') {
         errorLogging('ERROR: Not found BEGIN in FOR loop statement');
-      }
-
-    }
-    if (lexem.name === 'T_FOR') {
-      if (arr[index + 4].name !== 'T_TO') {
-        errorLogging('ERROR: No TO keyword found in appropriate position in FOR loop statement');
       }
     }
   }
@@ -301,7 +300,8 @@ const buildTree = table => {
   return tree;
 };
 
-//console.log(lexems);
-isIfCorrect(lexems);
+//isIfCorrect(lexems);
+isLoopCorrect(lexems);
 const tree = buildTree(lexems);
 getTreeFormated(tree);
+console.log(lexems);
