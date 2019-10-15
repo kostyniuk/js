@@ -195,12 +195,20 @@ lexems.sort((a, b) => {
 const howManyEnds = lexems => {
   let start = 0;
   let end = 0;
+  let forC = 0;
+  let ifC = 0;
   lexems.forEach(lexem => {
-    if (lexem.name === 'T_FOR' || lexem.name === 'T_IF') {
+    if (lexem.name === 'T_BEGIN') {
       start++;
     }
     if (lexem.name === 'T_END') {
       end++;
+    }
+    if (lexem.name === 'T_FOR') {
+      forC++;
+    }
+    if (lexem.name === 'T_IF') {
+      ifC++;
     }
   });
   return start - end;
@@ -252,6 +260,7 @@ const isIfCorrect = (lexems) => {
 
 const isLoopCorrect = (lexems) => {
   const table = lexems;
+  if (table[table.length - 1].name !== 'T_SEMICOLON') errorLogging('expression must end with ; ');
   table.forEach((lexem, index, arr) => {
 
     if (lexem.name === 'T_FOR') {
@@ -277,6 +286,21 @@ const isLoopCorrect = (lexems) => {
       }
       if (arr[index + 3].name !== 'T_BEGIN') {
         errorLogging('ERROR: Not found BEGIN in FOR loop statement');
+      }
+    }
+    if (lexem.name === 'T_BEGIN') {
+      if (arr[index + 1].type !== 'ID') {
+        if (arr[index + 1].type !== 'condition_operator') {
+          if (arr[index + 1].type !== 'iteration-statement') {
+            console.log(arr[index + 1])
+            errorLogging('ERROR: You can use the lexem after BEGIN');
+          }
+        }
+      }
+    }
+    if (lexem.name === 'T_END') {
+      if (arr[index + 1].name !== 'T_SEMICOLON') {
+        errorLogging('ERROR: END should be followed with ; ');
       }
     }
   }
