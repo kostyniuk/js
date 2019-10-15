@@ -119,9 +119,26 @@ const checkRules = (expression) => {
   return checkRules(copy);
 };
 
+const isUnresolved = (table, str) => {
+  let unresolved = str;
+  const tokens = [];
+  //console.log(table, str)
+  for (const lexem of table) {
+    tokens.push(lexem.token);
+    unresolved = unresolved.replace(lexem.token, '').trim();
+  }
+  unresolved = unresolved.split(' ');
+  if (Array.isArray(unresolved)) {
+    unresolved = unresolved[0];
+  }
+  const index = str.indexOf(unresolved);
+  return [unresolved, index];
 
+};
 
 let str = process.argv[2];
+const original = process.argv[2];
+
 if (str.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
@@ -132,6 +149,8 @@ if (notDetected[0]) {
   console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
 }
+
+
 
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
@@ -234,27 +253,34 @@ const lexems = getIndexes(str, myTokens);
 lexems.sort((a, b) => {
   const keyA = a.index;
   const keyB = b.index;
-  // Compare the 2 dates
   if (keyA < keyB) return -1;
   if (keyA > keyB) return 1;
   return 0;
 });
 
+
+const unresolved = isUnresolved(lexems, original);
+if (unresolved[0]) {
+  console.log(`ERROR: Found unresolved symbol. \nSymbol '${unresolved[0]}' at ${unresolved[1]} index`);
+  process.exit(1);
+}
+
 const checking = (lexTable, index) => {
-  if (index === lexTable.length) process.exit(0);
+  if (index === lexTable.length) {
+    console.log('Syntax is correct');
+    process.exit(0);
+  }
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
-    //if (lexTable.length === index) return;
     if (lexem.type !== 'ID') {
-      console.log('Expression cant start with the lexem.');
-      console.log(lexem);
+      console.log(`ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`);
       process.exit(0);
     }
 
   }
 
   if (lexem.type === 'ID') {
-    console.log('ID', lexem);
+    //console.log('ID', lexem);
     if (lexTable[index + 1].type === 'assignment_operator' ||
       lexTable[index + 1].type === 'unary-operator' ||
       lexTable[index + 1].type === 'binary-operator' ||
@@ -264,7 +290,7 @@ const checking = (lexTable, index) => {
       checking(lexTable, index);
     }
     if (lexTable[index + 1].type === 'ID') {
-      console.log('id right after id error', lexTable[index + 1]);
+      console.log(`Error: id right after id, \nlexem '${lexTable[index + 1].token}' at ${lexTable[index + 1].index} index`);
       process.exit(0);
     }
 
@@ -299,53 +325,53 @@ const checking = (lexTable, index) => {
         index++;
         checking(lexTable, index);
       }
-      console.log(lexTable[index], index);
-      console.log('error');
+      console.log(`ERROR: Lexem ${lexTable[index + 1].token} can't be used at ${lexTable[index + 1].index} index`);
+
       process.exit(0);
     }
   }
   if (lexem.type === 'assignment_operator') {
-    console.log('assignment_operator', lexem);
+    //console.log('assignment_operator', lexem);
 
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
     } else {
-      console.log('error', lexTable[index + 1]);
+      console.log(`ERROR: You can assing only ID variables, \nlexem ${lexTable[index + 1].token} at ${lexTable[index + 1].index}`);
       process.exit(0);
     }
   }
   if (lexem.type === 'unary-operator') {
-    console.log('unary-operator', lexem);
+    //console.log('unary-operator', lexem);
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
     } else {
-      console.log('error', lexTable[index + 1]);
+      console.log(`ERROR: Unary operators can be used only after IDs, \nlexem ${lexTable[index + 1].token} at ${lexTable[index + 1].index}`);
       process.exit(0);
     }
   }
   if (lexem.type === 'parenthesis-operator') {
-    console.log('parenthesis-operator', lexem);
+    //console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
       if (lexTable[index - 1].name === 'integers' ||
       lexTable[index - 1].name === 'floats') {
-        console.log('error: number and parenthesis', lexTable[index - 1]);
+        console.log(`ERROR: You should use [] operators only after ID, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
         process.exit(0);
       }
       if (lexTable[index + 1].type === 'ID') {
         index++;
         checking(lexTable, index);
       } else {
-        console.log('error dasa', lexTable[index + 1]);
+        console.log(`ERROR: Something wrong with your brackets, \nlexem '${lexTable[index + 1].token}' at index ${lexTable[index + 1].index}`);
         process.exit(0);
       }
     }
     if (lexem.name === 'T_RIGHT_BRACKET' ||
     lexem.name === 'T_RIGHT_PARENTHESIS') {
       if (lexTable[index + 1].type === 'ID') {
-        console.log('error', lexTable[index + 1]);
+        console.log(`ERROR: You can't use ID right after brackets, \nlexem ${lexTable[index + 1].token} at index ${lexTable[index + 1].index}`);
         process.exit(0);
       }
     } else {
@@ -354,21 +380,21 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'condition_operator') {
-    console.log('condition_operator', lexem);
+    //console.log('condition_operator', lexem);
     index++;
     checking(lexTable, index);
   }
   if (lexem.type === 'selection-statement') {
-    console.log('selection-statement', lexem);
+    //console.log('selection-statement', lexem);
     index++;
     checking(lexTable, index);
   }
   if (lexem.type === 'iteration-statement') {
-    console.log('iteration-statement', lexem);
+    //console.log('iteration-statement', lexem);
     index++;
     checking(lexTable, index);
   }
-  return 'konec';
+  return 'syntax is correct';
 };
 
 console.log(checking(lexems, 0));

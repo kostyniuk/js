@@ -31,6 +31,8 @@
                 "]" : "T_RIGHT_BRACKET",
                 "(" : "T_LEFT_PARENTHESIS",
                 ")" : "T_RIGHT_PARANTHESIS",
+                "{" : "T_LEFT_CURLY_BRACKET",
+                "}" : "T_RIGHT_CURLY_BRACKET",
                 ";" : "T_SEMICOLON"
             }
         },
