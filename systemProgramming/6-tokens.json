@@ -1,0 +1,79 @@
+{
+    "tokens" : {
+        "symbol" : {
+            "assignment_operator" : {
+                "=" : "T_EQUAL",
+                "*=" : "T_MUL_EQUAL",
+                "/=" : "T_DIV_EQUAL",
+                "%=" : "T_MOD_EQUAL",
+                "+=" : "T_PLUS_EQUAL",
+                "-=" : "T_MINUS_EQUAL",
+                "<<=" : "T_SL_EQUAL",
+                ">>=" : "T_SR_EQUAL",
+                "&=" : "T_AND_EQUAL",
+                "^=" : "T_XOR_EQUAL",
+                "|=" : "T_OR_EQUAL"
+                },
+            "unary-operator" : {
+                "&" : "T_AND",
+                "+" : "T_PLUS",
+                "-" : "T_MINUS",
+                "*" : "T_MUL",
+                "/" : "T_DIV",
+                "!" : "T_IS_NOT"
+            },
+            "binary-operator" : {
+                "++" : "T_INC",
+                "--" : "T_DEC"
+            }, 
+            "parenthesis-operator": {
+                "[" : "T_LEFT_BRACKET",
+                "]" : "T_RIGHT_BRACKET",
+                "(" : "T_LEFT_PARENTHESIS",
+                ")" : "T_RIGHT_PARENTHESIS",
+                ";" : "T_SEMICOLON"
+            },
+            "comparison-operator" : {
+                ">" : "T_IS_GREATER",
+                "<" : "T_IS_SMALLER",
+                ">=" : "T_IS_GREATER_OR_EQUAL",
+                "<=" : "T_IS_SMALLER_OR_EQUAL",
+                "==" : "T_IS_EQUAL",
+                "<>" : "T_IS_NOT_EQUAL"
+            },
+            "separator-operator" : {
+                "," : "T_COMA_SEPARATOR"
+            }
+        },
+        "keyword" : {
+            "condition_operator" : {
+                "if" : "T_IF", 
+                "else" : "T_ELSE",
+                "then" : "T_THEN",
+                "switch" : "T_SWITCH",
+                "case": "T_CASE",
+                "default": "T_DEFAULT" 
+            },
+            "selection-statement" : {
+                "break" : "T_BREAK",
+                "continue" : "T_CONTINUE",
+                "goto" : "T_GOTO",
+                "return" : "T_RETURN"  
+            },
+            "iteration-statement" : {
+                "for" : "T_FOR",
+                "while" : "T_WHILE",
+                "do" : "T_DO",
+                "to" : "T_TO",
+                "down to": "T_DOWNTO",
+                "begin" : "T_BEGIN",
+                "end" : "T_END" 
+            },
+            "type-operator" : {
+                "double" : "T_DOUBLE",
+                "short" : "T_SHORT",
+                "int" : "T_INT"
+            }
+        }
+    }
+}
