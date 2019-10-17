@@ -465,7 +465,8 @@ const addValues = (arrOfExpr, obj, lexems) => {
       if (lexems[i].token === arrOfVar[j].name) {
         if (lexems[i].Type) {
           if (lexems[i].Type[lexems[i].Type.length - 1] === ']') {
-            if (lexems[i].Type[lexems[i].Type.length - 2] < arrOfVar[j].index ) {
+            const num = lexems[i].Type.match(/\d+/)[0]
+            if (num - 1 < arrOfVar[j].index ) {
               console.log(`ERROR: Index out of range: ${arrOfVar[j].name}[${arrOfVar[j].index}]`);
               process.exit(1);
             }
@@ -503,7 +504,6 @@ const calculations = (expression, table) => {
   expressions = expressions.map(el => el.trim());
   let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
   let idsFlatted = Array.from(new Set(ids.flat()));
-  console.log({ names, idsFlatted })
   for(let i = 0; i < idsFlatted.length; i++) {
     let includes = false;
     for (let j = 0; j < names.length; j++) {
@@ -515,7 +515,6 @@ const calculations = (expression, table) => {
     console.log( `You haven't created the variable, ${idsFlatted[i]}`)
     process.exit(0)
     }
-    //return false;
   }
 
   //isOneArrIncludesAntother(names, idsFlatted);
@@ -559,7 +558,6 @@ const calculations = (expression, table) => {
     }
   }
 
-  console.log(expression)
   let splitted = expression.split(';')
   splitted = splitted.map(el => el.trim())
   splitted.pop();
