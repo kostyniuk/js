@@ -27,50 +27,9 @@ for (const operators in tokens.keyword) {
 keywordsAll = Object.keys(tokenKeywords);
 const keywordsTokenNames = Object.values(tokenKeywords);
 
-const getSymbols = (str, arrOfSymbols) => {
-  const symbolsUsed = [];
-  const arr = str.split(' ');
-  for (let i = 0; i < arrOfSymbols.length; i++) {
-    for (let j = 0; j < arr.length; j++) {
-      const temp = arr[j].split(arrOfSymbols[i]);
-      if (temp.length > 1) symbolsUsed.push(arrOfSymbols[i]);
-    }
-  }
-  return symbolsUsed;
-  //return Array.from(new Set(symbolsUsed));
-};
-
-const fix = (symbols, expression) => {
-  const singles = symbols.filter(el => el.length < 2);
-  const multiples = symbols.filter(el => el.length > 1);
-  const i = 0;
-
-  const allentries = (arr, index, expression) => {
-    const current = arr[index];
-    const indexExp = expression.indexOf(current);
-    if (index === arr.length) return;
-    if (expression[indexExp] !== expression[indexExp + 1]) {
-      if (indexExp !== -1) multiples.push(current);
-      index += 1;
-      allentries(arr, index, expression);
-    } else {
-      const start = expression.substring(0, indexExp);
-      const end = expression.substring(indexExp + 2);
-      console.log(current);
-      expression = start.concat(end);
-      console.log(expression);
-      allentries(arr, index, expression);
-    }
-  };
-  allentries(singles, i, expression);
-  return multiples;
-};
-
 const eliminateFloatsFromInts = (arrFl, arrInt) => {
-
   const flatArrFl = arrFl.flat();
   const flatArrInt = arrInt.flat();
-
   if (!flatArrFl) return flatArrInt;
   const parts = flatArrFl.map(element => element.split('.'));
   parts.forEach(arr => arr.forEach(el => {
@@ -122,7 +81,6 @@ const checkRules = (expression) => {
 const isUnresolved = (table, str) => {
   let unresolved = str;
   const tokens = [];
-  //console.log(table, str)
   for (const lexem of table) {
     tokens.push(lexem.token);
     unresolved = unresolved.replace(lexem.token, '').trim();
@@ -150,8 +108,6 @@ if (notDetected[0]) {
   process.exit(1);
 }
 
-
-
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
   'goto', 'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
@@ -172,15 +128,12 @@ integers = eliminateFloatsFromInts(floats, integers);
 const keyWords = getReserved(str, reserved);
 ids = deleteCopies(ids.flat(), keyWords);
 
-
 const singleSymb = symbolsAll.filter(el => el.length === 1);
 const multipleSymb = symbolsAll.filter(el => el.length === 2);
 
-//const symbolsUsed = fix(getSymbols(str, symbolsAll), str);
 const symbolsUsed = getAllSymbols(str, singleSymb, multipleSymb);
 const getIndexes = (str, hash) => {
   const result = [];
-
   const exec = (str, hash) => {
     for (const tokens in hash) {
       const arrLength = hash[tokens].length;
@@ -196,7 +149,6 @@ const getIndexes = (str, hash) => {
           for (const op in tokenss.symbol) {
             if (tokenss.symbol[op][token]) type = op;
           }
-
         } else {
           indexToken = keywordsAll.indexOf(token);
           name = keywordsTokenNames[indexToken];
@@ -236,7 +188,6 @@ const isOpenBracketBefore = (lexemTable, index) => {
   }
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
-
   return [lBr - rBr, lPr - rPr];
 };
 
@@ -258,7 +209,6 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-
 
 const unresolved = isUnresolved(lexems, original);
 if (unresolved[0]) {
@@ -285,9 +235,7 @@ const checking = (lexTable, index) => {
       console.log(`ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`);
       process.exit(0);
     }
-
   }
-
   if (lexem.type === 'ID') {
     //console.log('ID', lexem);
     if (lexTable[index + 1].type === 'assignment_operator' ||
@@ -302,8 +250,6 @@ const checking = (lexTable, index) => {
       console.log(`Error: id right after id, \nlexem '${lexTable[index + 1].token}' at ${lexTable[index + 1].index} index`);
       process.exit(0);
     }
-
-
     if (lexTable[index + 1].type === 'parenthesis-operator') {
       const isBrOpened = isOpenBracketBefore(lexTable, index);
       if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
@@ -331,13 +277,11 @@ const checking = (lexTable, index) => {
         checking(lexTable, index);
       }
       console.log(`ERROR: Lexem ${lexTable[index + 1].token} can't be used at ${lexTable[index + 1].index} index`);
-
       process.exit(0);
     }
   }
   if (lexem.type === 'assignment_operator') {
     //console.log('assignment_operator', lexem);
-
     if (lexTable[index + 1].type === 'ID') {
       index++;
       checking(lexTable, index);
@@ -365,7 +309,7 @@ const checking = (lexTable, index) => {
         console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
         process.exit(0);
       }
-      if (lexTable[index + 1].name === 'integers') {
+      if (lexTable[index + 1].name === 'ids' || lexTable[index + 1].name === 'integers') {
         index++;
         checking(lexTable, index);
       } else {
