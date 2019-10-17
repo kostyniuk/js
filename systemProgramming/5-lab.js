@@ -113,7 +113,6 @@ if (expressions.length > 1) expressions = expressions.slice(0, -1);
 expressions = expressions.map(el => el.trim());
 
 let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
-console.log(expressions);
 
 let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
 floats = floats.filter((obj) => obj);
@@ -196,7 +195,6 @@ const howManyEnds = lexems => {
   let start = 0;
   let end = 0;
   let forC = 0;
-  let ifC = 0;
   lexems.forEach(lexem => {
     if (lexem.name === 'T_BEGIN') {
       start++;
@@ -221,41 +219,10 @@ const loggingEndErr = n => {
   } else {
     errorLogging('So many ENDS');
   }
-}
+};
 
 loggingEndErr(howManyEnds(lexems));
 
-const isIfCorrect = (lexems) => {
-  const table = lexems;
-  table.forEach((lexem, index, arr) => {
-    if (lexem.name === 'T_THEN') {
-      if (arr[index - 1].name !== 'T_RIGHT_PARENTHESIS') {
-        errorLogging('ERROR: \')\' missed  expression in IF statement');
-      }
-      if (arr[index - 2].type !== 'ID') {
-        errorLogging('ERROR: Expression is wrong in IF statement');
-      }
-      if (arr[index + 1].name !== 'T_BEGIN') {
-        errorLogging('ERROR: BEGIN is missed in IF statement');
-      }
-    }
-    if (lexem.name === 'T_IF') {
-      if (index !== 0) {
-        if (arr[index - 1].name !== 'T_SEMICOLON') {
-          errorLogging('ERROR: IF statement should be in approapiate position');
-        }
-      }
-      if (arr[index + 1].name !== 'T_LEFT_PARENTHESIS') {
-        errorLogging('ERROR: \'(\' missed  expression in IF statement');
-      }
-      if (arr[index + 2].type !== 'ID') {
-        errorLogging('ERROR: Expression is wrong in IF statement');
-      }
-    }
-  }
-  );
-  return 'Your syntax is correct';
-};
 
 
 const isLoopCorrect = (lexems) => {
@@ -264,13 +231,13 @@ const isLoopCorrect = (lexems) => {
   table.forEach((lexem, index, arr) => {
 
     if (lexem.name === 'T_FOR') {
-      if (arr[index + 1].type !== 'ID') {
+      if (arr[index + 1].name !== 'ids') {
         errorLogging('ERROR: Not appropriate id as start in FOR loop statement');
       }
       if (arr[index + 2].name !== 'T_EQUAL') {
         errorLogging('ERROR: Not Equality symbol found in FOR loop statement');
       }
-      if (arr[index + 1].type !== 'ID') {
+      if (arr[index + 3].name !== 'integers') {
         errorLogging('ERROR: Not appropriate id as end in FOR loop statement');
       }
       if (arr[index + 4].name !== 'T_TO') {
@@ -278,9 +245,10 @@ const isLoopCorrect = (lexems) => {
       }
     }
     if (lexem.name === 'T_TO') {
-      if (arr[index - 4].name !== 'T_FOR') {
-        errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
-      }
+      try {
+        if (arr[index - 4].name !== 'T_FOR') {
+          errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
+        } } catch (e) { errorLogging('For is missed') ;}
       if (arr[index + 2].name !== 'T_DO') {
         errorLogging('ERROR: No Do found in FOR loop statement');
       }
@@ -292,7 +260,7 @@ const isLoopCorrect = (lexems) => {
       if (arr[index + 1].type !== 'ID') {
         if (arr[index + 1].type !== 'condition_operator') {
           if (arr[index + 1].type !== 'iteration-statement') {
-            console.log(arr[index + 1])
+            console.log(arr[index + 1]);
             errorLogging('ERROR: You can use the lexem after BEGIN');
           }
         }
