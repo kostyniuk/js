@@ -1,6 +1,6 @@
 'use strict';
 const fs = require('fs');
-const getAllSymbols = require('./4-symbols')
+const getAllSymbols = require('./4-symbols');
 
 const data = fs.readFileSync('./4-tokens.json', 'utf8');
 const tokens = JSON.parse(data).tokens;
@@ -236,7 +236,8 @@ const isOpenBracketBefore = (lexemTable, index) => {
   }
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
-  return { leftBrIsOpen, leftPrIsOpen };
+
+  return [lBr - rBr, lPr - rPr];
 };
 
 
@@ -265,6 +266,14 @@ if (unresolved[0]) {
   process.exit(1);
 }
 
+const bracket = isOpenBracketBefore(lexems, lexems.length);
+bracket.forEach((el) => {
+  if (el !== 0) {
+    console.log('ERROR: Quantity of brackets doesnt match');
+    process.exit(1);
+  }
+});
+
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
     console.log('Syntax is correct');
@@ -272,7 +281,7 @@ const checking = (lexTable, index) => {
   }
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
-    if (lexem.type !== 'ID') {
+    if (lexem.name !== 'ids') {
       console.log(`ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`);
       process.exit(0);
     }
@@ -297,24 +306,20 @@ const checking = (lexTable, index) => {
 
     if (lexTable[index + 1].type === 'parenthesis-operator') {
       const isBrOpened = isOpenBracketBefore(lexTable, index);
-      if (isBrOpened.leftBrIsOpen && isBrOpened.leftPrIsOpen) {
-        if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
+      if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
         lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
-          index++;
-          checking(lexTable, index);
-        }
+        index++;
+        checking(lexTable, index);
       }
-      if (isBrOpened.leftBrIsOpen) {
-        if (lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
-          index++;
-          checking(lexTable, index);
-        }
+
+      if (lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
+        index++;
+        checking(lexTable, index);
       }
-      if (isBrOpened.leftPrIsOpen) {
-        if (lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
-          index++;
-          checking(lexTable, index);
-        }
+
+      if (lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+        index++;
+        checking(lexTable, index);
       }
       if (lexTable[index + 1].name === 'T_SEMICOLON') {
         index++;
@@ -357,10 +362,10 @@ const checking = (lexTable, index) => {
     lexem.name === 'T_LEFT_PARENTHESIS') {
       if (lexTable[index - 1].name === 'integers' ||
       lexTable[index - 1].name === 'floats') {
-        console.log(`ERROR: You should use [] operators only after ID, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
+        console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
         process.exit(0);
       }
-      if (lexTable[index + 1].type === 'ID') {
+      if (lexTable[index + 1].name === 'integers') {
         index++;
         checking(lexTable, index);
       } else {
