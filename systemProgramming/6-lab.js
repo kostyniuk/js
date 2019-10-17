@@ -162,8 +162,6 @@ if (notDetected[0]) {
   process.exit(1);
 }
 
-
-
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'void',
   'goto', 'auto', 'signed', 'const', 'extern', 'register', 'unsigned', 'return',
@@ -172,24 +170,36 @@ const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
 let expressions = str.split(';').slice(0, -1);
 expressions = expressions.map(el => el.trim());
 
-let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
 
-let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
-floats = floats.filter((obj) => obj);
+const getTokens = (expressions, string = '') => {
 
-let integers = expressions.map(el => el.match(/\d+/g)).flat();
-integers = integers.filter((obj) => obj);
-integers = eliminateFloatsFromInts(floats, integers);
+  let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
+  let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
+  floats = floats.filter((obj) => obj);
+  let integers = expressions.map(el => el.match(/\d+/g)).flat();
+  integers = integers.filter((obj) => obj);
+  integers = eliminateFloatsFromInts(floats, integers);
 
-const keyWords = getReserved(str, reserved);
-ids = deleteCopies(ids.flat(), keyWords);
+  const keyWords = getReserved(str, reserved);
+  ids = deleteCopies(ids.flat(), keyWords);
 
+  const singleSymb = symbolsAll.filter(el => el.length === 1);
+  const multipleSymb = symbolsAll.filter(el => el.length === 2);
+  let symbolsUsed;
+  if (!string) {
+    symbolsUsed = getAllSymbols(str, singleSymb, multipleSymb);
+  } else {
+    symbolsUsed = getAllSymbols(string, singleSymb, multipleSymb);
+  }
+  
 
-const singleSymb = symbolsAll.filter(el => el.length === 1);
-const multipleSymb = symbolsAll.filter(el => el.length === 2);
+  return { keyWords,
+    ids,
+    floats,
+    integers,
+    symbolsUsed };
+};
 
-//const symbolsUsed = fix(getSymbols(str, symbolsAll), str);
-const symbolsUsed = getAllSymbols(str, singleSymb, multipleSymb);
 const getIndexes = (str, hash) => {
   const result = [];
 
@@ -248,27 +258,27 @@ const isOpenBracketBefore = (lexemTable, index) => {
   }
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
-  return { leftBrIsOpen, leftPrIsOpen };
+
+  return [lBr - rBr, lPr - rPr];
 };
 
-
-const myTokens = {
-  keyWords,
-  ids,
-  floats,
-  integers,
-  symbolsUsed
+const lexemsSort = lexems => {
+  return lexems.sort((a, b) => {
+    const keyA = a.index;
+    const keyB = b.index;
+    if (keyA < keyB) return -1;
+    if (keyA > keyB) return 1;
+    return 0;
+  });
 };
 
-const lexems = getIndexes(str, myTokens);
+const myTokens = getTokens(expressions);
 
-lexems.sort((a, b) => {
-  const keyA = a.index;
-  const keyB = b.index;
-  if (keyA < keyB) return -1;
-  if (keyA > keyB) return 1;
-  return 0;
-});
+let lexems = getIndexes(str, myTokens);
+lexems = lexemsSort(lexems)
+
+
+
 
 const unresolved = isUnresolved(lexems, original);
 if (unresolved[0]) {
@@ -281,23 +291,23 @@ const getAssignments = (lexTable, types) => {
   const lexemsAll = lexTable;
   let semicolonBef = 0;
   let semicolonAft = 0;
-  let indexesOfAssign = [];
+  const indexesOfAssign = [];
   lexTable.forEach((lexem, i, lexems) => {
     if (lexems[i].name === 'ids') {
-      if(lexems[i - 1]) {
-        if(lexems[i - 1].type === 'type-operator') {
-          lexemsAll[i].Type = lexems[i-1].token;
+      if (lexems[i - 1]) {
+        if (lexems[i - 1].type === 'type-operator') {
+          lexemsAll[i].Type = lexems[i - 1].token;
         }
-        if(lexems[i - 1].name === 'T_COMA_SEPARATOR') {
+        if (lexems[i - 1].name === 'T_COMA_SEPARATOR') {
 
-          for(let j = i; j > 0; j--) {
-            if(lexTable[j].name === 'T_SEMICOLON') {
+          for (let j = i; j > 0; j--) {
+            if (lexTable[j].name === 'T_SEMICOLON') {
               semicolonBef = lexTable[j].index;
               break;
             }
           }
-          for(let j = i; j < lexems.length; j++) {
-            if(lexTable[j].name === 'T_SEMICOLON') {
+          for (let j = i; j < lexems.length; j++) {
+            if (lexTable[j].name === 'T_SEMICOLON') {
               semicolonAft = lexTable[j].index;
               break;
             }
@@ -310,9 +320,268 @@ const getAssignments = (lexTable, types) => {
   return indexesOfAssign;
 };
 
-//console.log(lexems)
-console.log(getAssignments(lexems, typesTokenNames));
-process.exit(0)
+const assignRanges = getAssignments(lexems, typesTokenNames);
+
+const setTypes = (assignRanges, lexems) => {
+  const divorcedExp = [];
+  for (let i = 0; i < assignRanges.length; i++) {
+    const start = assignRanges[i][0];
+    const end = assignRanges[i][1];
+    divorcedExp[i] = [];
+    for (const lexem of lexems) {
+      if (i === 0 && lexem === lexems[0]) { divorcedExp[i].push(lexems[0]) ;}
+      if (lexem.index < end && lexem.index > start) divorcedExp[i].push(lexem);
+    }
+  }
+
+  //console.log(divorcedExp)
+  divorcedExp.map((arr) => {
+    arr.map((lexem, indexP, parent) => {
+      if (lexem.name === 'ids') {
+        lexem.Type = parent[0].token;
+        const index = lexems.indexOf(lexem);
+        lexems[index] = lexem;
+      }
+    });
+  });
+
+  return [lexems, divorcedExp];
+};
+
+const inizializationTokens = setTypes(assignRanges, lexems)[1];
+lexems = setTypes(assignRanges, lexems)[0];
+
+const bracket = isOpenBracketBefore(lexems, lexems.length);
+bracket.forEach((el) => {
+  if (el !== 0) {
+    console.log('ERROR: Quantity of brackets doesnt match');
+    process.exit(1);
+  }
+});
+
+const setArrayTypes = lexems => {
+  const original = lexems;
+  lexems.forEach((lexem, i, table) => {
+    if(lexem.token === ']') {
+      if (table[i - 1].type === 'ID' && table[i - 2].token === '[') {
+        if (table[i - 3].Type) {
+        original[i - 3].Type += `[${table[i - 1].token}]`;
+        }
+      } else {
+        console.log('error with your array assignment', lexem.name, lexem.index);
+        process.exit(1);
+      }
+    } 
+  })
+  return original;
+  
+};
+
+ 
+
+const getOnlyAssignments = lexems => {
+  const assignments = []
+  let indexes = [];
+  const indexesBeforeFirst = []
+  lexems.forEach((lexem, i, table) => {
+    if(lexem.token === ';') {
+      //console.log(lexem)
+      if (table[i - 1].name === 'integers' || table[i - 1].name === 'floats') {
+        indexes.push((lexem.index))
+
+        // }
+      }  
+    } 
+  })
+  lexems.forEach((lexem, i, arr) => {
+    if (lexem.token === ';' && lexem.index < indexes[0]) indexesBeforeFirst.push(lexem.index)
+  })
+  indexes = [indexesBeforeFirst[indexesBeforeFirst.length - 1], ...indexes];
+  for(let i = 0; i < indexes.length - 1; i++) {
+    const start = indexes[i];
+    const end = indexes[i + 1];
+    assignments[i] = []
+    for(let j = 0; j < lexems.length; j++) {
+      if (lexems[j].index > start && lexems[j].index < end) assignments[i].push(lexems[j]) 
+    }
+  }
+  return assignments;
+};
+
+const inizializationWithTypes = (lexems) => {
+  const variables = {}
+  for(const lexem of lexems) {
+    if (lexem.Type) {
+      const type = lexem.Type;
+      variables[lexem.token] = { type }
+    }
+  }
+  return variables;
+}
+
+const separationOfNamesAndValues = arr => {
+  const result = [];
+  const indexes = [];
+  let start;
+  let end;
+  for(let i =0; i < arr.length; i++) {
+    indexes[i] = [];
+    for(let j = 0; j < arr[i].length; j++) {
+      if(arr[i][j] === '[') start = j;
+      if (arr[i][j] === ']') end = j;
+    }
+    if (start !== -1 && end !== -1) {
+      indexes[i].push(start, end);
+      const name = arr[i][0];
+      const index = arr[i][2];
+      const value = arr[i].slice(end + 2).join(' ');
+      result.push({name, index, value})
+    } else {
+      const name = arr[i].splice(0, 1).join('');
+      const value = arr[i].slice(1).join(' ');
+      result.push({name, value});
+    }
+    start = -1;
+    end = -1;
+    
+  }
+  return result;
+}
+
+
+
+const addValues = (arrOfExpr, obj, lexems) => {
+  //console.log(arrOfExpr);
+  const data = [];
+  arrOfExpr.forEach((expression, i, arr) => {
+    data[i] = [];
+    expression.forEach((lexem, j, parent) => {
+      data[i].push(lexem.token);
+    })
+  })
+  const arrOfVar = separationOfNamesAndValues(data);
+  for(let i = 0; i < lexems.length; i++) {
+    for(let j = 0; j < arrOfVar.length; j++) {
+      if (lexems[i].token === arrOfVar[j].name) {
+        if (lexems[i].Type) {
+          if (lexems[i].Type[lexems[i].Type.length - 1] === ']') {
+            if (lexems[i].Type[lexems[i].Type.length - 2] < arrOfVar[j].index ) {
+              console.log(`ERROR: Index out of range: ${arrOfVar[j].name}[${arrOfVar[j].index}]`);
+              process.exit(1);
+            }
+          }
+          arrOfVar[j].type = lexems[i].Type;
+        }
+      }
+    }
+  }
+  return arrOfVar
+}
+
+const isOneArrIncludesAntother = (arr1, arr2) => {
+  for(let i = 0; i < arr1.length; i++) {
+    let includes = false;
+    for (let j = 0; j < arr2.length; j++) {
+      if (arr1[i] === arr2[j]) includes = true;
+    }
+    if (!includes)
+    console.log( `You haven't created the variable, ${arr1[i]}`)
+    process.exit(1)
+    //return false;
+  }
+  //return true;
+}
+
+const calculations = (expression, table) => {
+  let names = [];
+  for(const obj of table) {
+    names.push(obj.name)
+  }
+  names = Array.from(new Set(names));
+  let expressions = expression.split(';');
+  expressions.pop()
+  expressions = expressions.map(el => el.trim());
+  let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
+  let idsFlatted = Array.from(new Set(ids.flat()));
+  console.log({ names, idsFlatted })
+  for(let i = 0; i < idsFlatted.length; i++) {
+    let includes = false;
+    for (let j = 0; j < names.length; j++) {
+      //console.log('hj')
+      if (idsFlatted[i] === names[j]) includes = true;
+      //console.log(includes)
+    }
+    if (!includes) {
+    console.log( `You haven't created the variable, ${idsFlatted[i]}`)
+    process.exit(0)
+    }
+    //return false;
+  }
+
+  //isOneArrIncludesAntother(names, idsFlatted);
+  const tokens = getTokens(expressions, expression);
+  let lexems = getIndexes(expression, tokens);
+  lexems = lexemsSort(lexems);
+  for(const lexem of lexems) {
+    for(const variable of table) {
+      if (lexem.token === variable.name && !variable.index) {lexem.value = variable.value}
+    }
+  }
+  for(let i = 0; i < idsFlatted.length; i++) {
+    for(let j =0 ;j < lexems.length; j++) {
+      if (idsFlatted[i] === lexems[j].token && lexems[j].value && lexems[j + 1].token !== '=') {
+        for(const el of table) {
+          if (el.name === idsFlatted[i]) {
+            expression = expression.replace(lexems[j].token, el.value)
+          }
+        }
+      }
+    }
+  }
+  
+  for(let obj of table) {
+    if (obj.index) {
+      const newName = `${obj.name}[${obj.index}]`
+      table.push({ name: newName, value: obj.value, type: obj.type  });
+      idsFlatted.push(newName);
+    }
+  }
+
+  for(let i = 0; i < table.length; i++) {
+    if(table[i].index) {
+      table.splice(i, 1);
+      i--;
+    }
+  }
+  for(const variable of table) {
+    if (expression.includes(variable.name) && expression[expression.indexOf(variable.name) + 1] !== '=') {
+        expression = expression.replace(variable.name, variable.value);
+    }
+  }
+
+  console.log(expression)
+  let splitted = expression.split(';')
+  splitted = splitted.map(el => el.trim())
+  splitted.pop();
+  splitted = splitted.map(el => el.split('='));
+  const hash = {}
+  for(let i = 0; i < splitted.length; i++) {
+    hash[splitted[i][0]] = splitted[i][1]
+  }
+  console.log(hash);
+  let results = []
+  for(const el in hash) {
+    results.push(eval(hash[el]));
+  }
+  console.log(results)
+}
+
+lexems  = setArrayTypes(lexems);
+const arrOfAssign = getOnlyAssignments(lexems);
+const variables = inizializationWithTypes(lexems);
+const info = addValues(arrOfAssign, variables, lexems);
+calculations('b=2*a[n]; n=d;', info);
+//console.log(lexems);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
@@ -331,15 +600,15 @@ const checking = (lexTable, index) => {
 
   if (lexem.type === 'ID') {
 
-    if (lexTable[index - 1] ) {
+    if (lexTable[index - 1]) {
       if (lexTable[index - 1].type !== 'type-operator') {
         if (lexTable[index - 1].name !== 'T_SEMICOLON') {
           if (lexTable[index - 1].name !== 'T_COMA_SEPARATOR') {
             if (lexTable[index - 1].name !== 'T_LEFT_BRACKET') {
               if (lexTable[index - 1].type !== 'assignment_operator') {
                 if (lexTable[index - 1].type !== 'unary-operator') {
-                console.log(`ERROR: Expression can't start with the lexem ${lexTable[index - 1].name}`);
-                process.exit(1);
+                  console.log(`ERROR: Expression can't start with the lexem ${lexTable[index - 1].name}`);
+                  process.exit(1);
                 }
               }
             }
@@ -347,7 +616,7 @@ const checking = (lexTable, index) => {
         }
       }
     }
-    
+
     //console.log('ID', lexem);
     if (lexTable[index + 1].type === 'assignment_operator' ||
       lexTable[index + 1].type === 'unary-operator' ||
@@ -367,6 +636,7 @@ const checking = (lexTable, index) => {
     if (lexTable[index + 1].type === 'parenthesis-operator') {
       const isBrOpened = isOpenBracketBefore(lexTable, index);
       if (isBrOpened.leftBrIsOpen && isBrOpened.leftPrIsOpen) {
+        console.log(isBrOpened.leftBrIsOpen, isBrOpened.leftPrIsOpen);
         if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
         lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
           index++;
@@ -394,7 +664,11 @@ const checking = (lexTable, index) => {
         index++;
         checking(lexTable, index);
       }
-      console.log(`ERROR: Lexem ${lexTable[index + 1].token} can't be used at ${lexTable[index + 1].index} index`);
+      if(lexTable[index + 1].token === ']') {
+        index++;
+        checking(lexTable, index);
+      }
+      console.log(`ERROR: Lexem ${lexTable[index + 1].token}, ${lexem.token}, ${lexTable[index - 1].token} can't be used at ${lexTable[index + 1].index} index`);
 
       process.exit(0);
     }
@@ -421,7 +695,7 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'parenthesis-operator') {
-    //console.log('parenthesis-operator', lexem);
+//    console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
       if (lexTable[index - 1].name === 'integers' ||
@@ -437,15 +711,18 @@ const checking = (lexTable, index) => {
         process.exit(0);
       }
     }
-    if (lexem.name === 'T_RIGHT_BRACKET' ||
-    lexem.name === 'T_RIGHT_PARENTHESIS') {
+    if (lexem.name === 'T_RIGHT_BRACKET') {
       if (lexTable[index + 1].type === 'ID') {
         console.log(`ERROR: You can't use ID right after brackets, \nlexem ${lexTable[index + 1].token} at index ${lexTable[index + 1].index}`);
         process.exit(0);
       }
+      else {
+        index++;
+        checking(lexTable, index);
+      }
     } else {
-      index++;
-      checking(lexTable, index);
+        index++;
+        checking(lexTable, index);
     }
   }
   if (lexem.type === 'condition_operator') {
