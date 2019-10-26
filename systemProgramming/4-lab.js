@@ -61,7 +61,7 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
+const regex2 = /\W+\d+[a-zA-Z_]+[a-zA-Z0-9_]+/; //-
 const cyrillicPattern = /[\u0400-\u04FF]/;
 const notDetected = [];
 
@@ -70,7 +70,7 @@ const checkRules = (expression) => {
   let match;
   try {
     match = copy.match(regex2)[0];
-    notDetected.push(match);
+    notDetected.push(match.substr(1));
     copy = copy.replace(match, '');
   } catch (err) {
     return copy;
@@ -78,24 +78,9 @@ const checkRules = (expression) => {
   return checkRules(copy);
 };
 
-const isUnresolved = (table, str) => {
-  let unresolved = str;
-  const tokens = [];
-  for (const lexem of table) {
-    tokens.push(lexem.token);
-    unresolved = unresolved.replace(lexem.token, '').trim();
-  }
-  unresolved = unresolved.split(' ');
-  if (Array.isArray(unresolved)) {
-    unresolved = unresolved[0];
-  }
-  const index = str.indexOf(unresolved);
-  return [unresolved, index];
 
-};
 
 let str = process.argv[2];
-const original = process.argv[2];
 
 if (str.match(cyrillicPattern)) {
   console.log('Something went wrong.\nTry another expression.');
@@ -107,6 +92,7 @@ if (notDetected[0]) {
   console.log('Something went wrong.\nTry another expression.');
   process.exit(1);
 }
+
 
 const reserved = ['if', 'then', 'else', 'switch', 'case', 'default', 'break',
   'int', 'float', 'char', 'double', 'long', 'for', 'while', 'do', 'void',
@@ -121,7 +107,9 @@ let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
 let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
 floats = floats.filter((obj) => obj);
 
-let integers = expressions.map(el => el.match(/\d+/g)).flat();
+let integers = expressions.map(el => el.match(/\W\d+\W+/g)).flat();
+
+integers = integers.filter(Boolean).map(el => el.match(/\d+/g));
 integers = integers.filter((obj) => obj);
 integers = eliminateFloatsFromInts(floats, integers);
 
@@ -183,13 +171,14 @@ const isOpenBracketBefore = (lexemTable, index) => {
   for (let i = 0; i < index; i++) {
     if (lexemTable[i].name === 'T_LEFT_BRACKET') lBr++;
     if (lexemTable[i].name === 'T_RIGHT_BRACKET') rBr++;
-    if (lexemTable[i].name === 'T_LEFT_PARENTHESIS') lPr++;
-    if (lexemTable[i].name === 'T_RIGHT_PARENTHESIS') rPr++;
+    if (lexemTable[i].token === '(') lPr++;
+    if (lexemTable[i].token === ')') rPr++;
   }
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
   return [lBr - rBr, lPr - rPr];
 };
+
 
 
 const myTokens = {
@@ -200,8 +189,7 @@ const myTokens = {
   symbolsUsed
 };
 
-const lexems = getIndexes(str, myTokens);
-
+let lexems = getIndexes(str, myTokens);
 lexems.sort((a, b) => {
   const keyA = a.index;
   const keyB = b.index;
@@ -210,11 +198,7 @@ lexems.sort((a, b) => {
   return 0;
 });
 
-const unresolved = isUnresolved(lexems, original);
-if (unresolved[0]) {
-  console.log(`ERROR: Found unresolved symbol. \nSymbol '${unresolved[0]}' at ${unresolved[1]} index`);
-  process.exit(1);
-}
+console.log(lexems);
 
 const bracket = isOpenBracketBefore(lexems, lexems.length);
 bracket.forEach((el) => {
@@ -223,7 +207,6 @@ bracket.forEach((el) => {
     process.exit(1);
   }
 });
-
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
     console.log('Syntax is correct');
