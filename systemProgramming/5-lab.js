@@ -183,9 +183,6 @@ const myTokens = {
   symbolsUsed
 };
 
-console.log(myTokens);
-process.exit(0)
-
 const lexems = getIndexes(str, myTokens);
 lexems.sort((a, b) => {
   const keyA = a.index;
@@ -246,6 +243,9 @@ const isLoopCorrect = (lexems) => {
     }
     if (lexem.name === 'T_TO') {
       try {
+        if (arr[index + 1].type !== 'ID') {
+          errorLogging('ERROR: No high range found in FOR loop statement');
+        }
         if (arr[index - 4].name !== 'T_FOR') {
           errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
         } } catch (e) { errorLogging('ERROR: For is missed') }
