@@ -68,7 +68,7 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/;
+const regex2 = /\W+\d+[a-zA-Z_]+[a-zA-Z0-9_]*/;
 const cyrillicPattern = /[\u0400-\u04FF]/;
 const notDetected = [];
 
@@ -77,7 +77,7 @@ const checkRules = (expression) => {
   let match;
   try {
     match = copy.match(regex2)[0];
-    notDetected.push(match);
+    notDetected.push(match.substr(1));
     copy = copy.replace(match, '');
   } catch (err) {
     return copy;
@@ -96,6 +96,8 @@ str = str.toLowerCase();
 if (str.match(cyrillicPattern)) {
   errorLogging('Something went wrong.\nTry another expression.');
 }
+
+console.log(str)
 str = checkRules(str);
 if (notDetected[0]) {
   console.log(notDetected);
@@ -117,7 +119,9 @@ let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
 let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
 floats = floats.filter((obj) => obj);
 
-let integers = expressions.map(el => el.match(/\d+/g)).flat();
+let integers = expressions.map(el => el.match(/\W\d+\W+/g)).flat();
+
+integers = integers.filter(Boolean).map(el => el.match(/\d+/g));
 integers = integers.filter((obj) => obj);
 integers = eliminateFloatsFromInts(floats, integers);
 
@@ -146,7 +150,6 @@ const getIndexes = (str, hash) => {
           for (const op in tokenss.symbol) {
             if (tokenss.symbol[op][token]) type = op;
           }
-
         } else {
           indexToken = keywordsAll.indexOf(token);
           name = keywordsTokenNames[indexToken];
@@ -172,7 +175,6 @@ const getIndexes = (str, hash) => {
   exec(str, hash);
   return result;
 };
-
 const myTokens = {
   keyWords,
   ids,
@@ -181,8 +183,10 @@ const myTokens = {
   symbolsUsed
 };
 
-const lexems = getIndexes(str, myTokens);
+console.log(myTokens);
+process.exit(0)
 
+const lexems = getIndexes(str, myTokens);
 lexems.sort((a, b) => {
   const keyA = a.index;
   const keyB = b.index;
@@ -190,7 +194,6 @@ lexems.sort((a, b) => {
   if (keyA > keyB) return 1;
   return 0;
 });
-
 const howManyEnds = lexems => {
   let start = 0;
   let end = 0;
@@ -211,7 +214,6 @@ const howManyEnds = lexems => {
   });
   return start - end;
 };
-
 const loggingEndErr = n => {
   if (!n) return;
   if (n > 0) {
@@ -222,8 +224,6 @@ const loggingEndErr = n => {
 };
 
 loggingEndErr(howManyEnds(lexems));
-
-
 
 const isLoopCorrect = (lexems) => {
   const table = lexems;
@@ -238,7 +238,7 @@ const isLoopCorrect = (lexems) => {
         errorLogging('ERROR: Not Equality symbol found in FOR loop statement');
       }
       if (arr[index + 3].name !== 'integers') {
-        errorLogging('ERROR: Not appropriate id as end in FOR loop statement');
+        errorLogging('ERROR: You can assign only integers to id in FOR loop statement');
       }
       if (arr[index + 4].name !== 'T_TO') {
         errorLogging('ERROR: No TO keyword found in appropriate position in FOR loop statement');
@@ -248,7 +248,7 @@ const isLoopCorrect = (lexems) => {
       try {
         if (arr[index - 4].name !== 'T_FOR') {
           errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
-        } } catch (e) { errorLogging('For is missed') ;}
+        } } catch (e) { errorLogging('ERROR: For is missed') }
       if (arr[index + 2].name !== 'T_DO') {
         errorLogging('ERROR: No Do found in FOR loop statement');
       }

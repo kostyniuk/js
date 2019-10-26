@@ -61,7 +61,7 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const regex2 = /\W+\d+[a-zA-Z_]+[a-zA-Z0-9_]+/; //-
+const regex2 = /\W+\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
 const cyrillicPattern = /[\u0400-\u04FF]/;
 const notDetected = [];
 
