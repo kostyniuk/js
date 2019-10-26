@@ -44,7 +44,8 @@ const eliminateFloatsFromInts = (arrFl, arrInt) => {
 const getReserved = (str, arrOfReserved) => {
   const reservedUsed = [];
   for (let i = 0; i < arrOfReserved.length; i++) {
-    if (str.includes(arrOfReserved[i])) {
+    if (str.includes(`${arrOfReserved[i]} `) || 
+    str.includes(`${arrOfReserved[i]};`)) {
       const token = arrOfReserved[i];
       reservedUsed.push(token);
       str = str.replace(token, '');
@@ -195,6 +196,7 @@ const howManyEnds = lexems => {
   let start = 0;
   let end = 0;
   let forC = 0;
+  let ifC = 0;
   lexems.forEach(lexem => {
     if (lexem.name === 'T_BEGIN') {
       start++;
