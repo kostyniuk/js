@@ -10,8 +10,8 @@ const info = {
 
 const routing = {
   '/': '<h1>Welcole to my server!!! </h1>',
-  '/me': info,
-  '/me/age': () => info.age,
+  '/me': info, //not scalar works dynamicly
+  '/me/age': info.age, //scalar assign at the beginning 
   '/me/name': info.name,
   '/api/method1': (req, res) => {
     console.log(req.url);
@@ -39,3 +39,7 @@ http.createServer((req, res) => {
   const result = serializer(data, req, res);
   res.end(result);
 }).listen(8000);
+
+setInterval(() => {
+  info.age++
+}, 5000)
