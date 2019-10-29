@@ -44,7 +44,7 @@ const eliminateFloatsFromInts = (arrFl, arrInt) => {
 const getReserved = (str, arrOfReserved) => {
   const reservedUsed = [];
   for (let i = 0; i < arrOfReserved.length; i++) {
-    if (str.includes(`${arrOfReserved[i]} `) || 
+    if (str.includes(`${arrOfReserved[i]} `) ||
     str.includes(`${arrOfReserved[i]};`)) {
       const token = arrOfReserved[i];
       reservedUsed.push(token);
@@ -98,7 +98,7 @@ if (str.match(cyrillicPattern)) {
   errorLogging('Something went wrong.\nTry another expression.');
 }
 
-console.log(str)
+console.log(str);
 str = checkRules(str);
 if (notDetected[0]) {
   console.log(notDetected);
@@ -116,6 +116,7 @@ if (expressions.length > 1) expressions = expressions.slice(0, -1);
 expressions = expressions.map(el => el.trim());
 
 let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
+ids = ids.filter((obj) => obj);
 
 let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
 floats = floats.filter((obj) => obj);
@@ -222,7 +223,73 @@ const loggingEndErr = n => {
   }
 };
 
+//console.log(lexems);
+
 loggingEndErr(howManyEnds(lexems));
+
+const isEndIsSemicoln = table => {
+  table.forEach((lexem, i, arr) => {
+    if (lexem.token === ';') {
+      if (arr[i - 1].type === 'binary-operator' ||
+      arr[i - 1].type === 'parenthesis-operator' ||
+      arr[i - 1].type === 'selection-statement' ||
+      arr[i - 1].name === 'T_END' ||
+      arr[i - 1].type === 'ID') {
+        if (arr[i - 1].token !== ';') {
+          console.log('');
+        } else {
+          console.log(`You have an error at ${arr[i].index} index`);
+          process.exit(1);
+        }
+      } 
+    }
+    if (lexem.token === 'end' && lexem.index !== 0) {
+      if (arr[i - 1].name !== 'T_SEMICOLON') {
+        if (arr[i - 1].name !== 'T_BEGIN') {
+          console.log('ERROR: \';\' should be used before \'end\'');
+          process.exit(1);
+        }
+      }
+    }
+  });
+};
+
+const isLoopRangesRight = table => {
+  table.forEach((lexem, i, arr) => {
+    if (lexem.token === 'to') {
+      if (parseInt(arr[i - 1].token) > parseInt(arr[i + 1].token)) {
+        console.log('ERROR: Unresolved ranges of loop');
+        process.exit(1)
+      }
+    }
+  })
+}
+
+const isBeginBefore = (table, index) => {
+  table = table.slice(0, index)
+  let ends = 0;
+  let begins = 0;
+  table.forEach((lexem, i, arr) => {
+    if (lexem.token === 'end') ends++;
+    if (lexem.token === 'begin') begins++;
+  });
+  return begins - ends
+}
+
+const isEndCouldBeUsed = table => {
+  table.forEach((lexem, i, arr) => {
+    if (lexem.token === 'end') {
+      if (!isBeginBefore(table, i)) {
+        console.log('ERROR: End should be used with begin');
+        process.exit(1)
+      }
+    }
+  });
+}
+
+isLoopRangesRight(lexems)
+isEndCouldBeUsed(lexems)
+isEndIsSemicoln(lexems);
 
 const isLoopCorrect = (lexems) => {
   const table = lexems;
@@ -250,7 +317,8 @@ const isLoopCorrect = (lexems) => {
         }
         if (arr[index - 4].name !== 'T_FOR') {
           errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
-        } } catch (e) { errorLogging('ERROR: For is missed') }
+        } 
+} catch (e) { errorLogging('ERROR: For is missed'); }
       if (arr[index + 2].name !== 'T_DO') {
         errorLogging('ERROR: No Do found in FOR loop statement');
       }
@@ -294,8 +362,148 @@ const buildTree = table => {
   return tree;
 };
 
+const checking = (lexTable, index) => {
+  if (index === lexTable.length) process.exit(0);
+  const lexem = lexTable[index];
+  if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
+    if (lexem.name !== 'ids') {
+      if (lexem.name !== 'T_FOR') {
+        if (lexem.name !== 'T_END') {
+          console.log(`ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`);
+          process.exit(0);
+        }
+      }
+    }
+  }
+  if (lexem.type === 'ID') {
+    // if (lexTable[index + 1].token === ':=') {
+    //   console.log('here')
+    //   index++;
+    //   checking(lexTable, index);
+    // }
+    if (lexTable[index + 1].type === 'assignment_operator' ||
+      lexTable[index + 1].token === ':=' ||
+      lexTable[index + 1].type === 'unary-operator' ||
+      lexTable[index + 1].type === 'binary-operator' ||
+      lexTable[index + 1].name === 'unary-operator' ||
+      lexTable[index + 1].type === 'unary-operator' ||
+      lexTable[index + 1].name === 'T_TO' ||
+      lexTable[index + 1].name === 'T_DO') {
+      index++;
+      checking(lexTable, index);
+    }
+    //console.log({ index: lexTable[index] });
+    //console.log({ lexem });
+    if (lexTable[index + 1].type === 'ID') {
+      //console.log({ lexem })
+      //console.log('-------------------');
+      //console.log({ current: lexTable[index], next: lexTable[index + 1] });
+      //console.log('-------------------');
+      //console.log(`Error: id right after id, \nlexem '${lexTable[index + 1].token}' at ${lexTable[index + 1].index} index`);
+      process.exit(0);
+    }
+    if (lexTable[index + 1].type === 'parenthesis-operator') {
+      //const isBrOpened = isOpenBracketBefore(lexTable, index);
+      if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
+        lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+        index++;
+        checking(lexTable, index);
+      }
+
+      if (lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
+        index++;
+        checking(lexTable, index);
+      }
+
+      if (lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+        index++;
+        checking(lexTable, index);
+      }
+      if (lexTable[index + 1].name === 'T_SEMICOLON') {
+        index++;
+        checking(lexTable, index);
+      }
+      if (lexTable[index + 1].name === 'T_LEFT_PARENTHESIS' ||
+      lexTable[index + 1].name === 'T_LEFT_BRACKET') {
+        index++;
+        checking(lexTable, index);
+      }
+      console.log(`ERROR: Lexem ${lexTable[index + 1].token} can't be used at ${lexTable[index + 1].index} index`);
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'assignment_operator') {
+    //console.log('assignment_operator', lexem);
+    if (lexTable[index + 1].type === 'ID') {
+      index++;
+      checking(lexTable, index);
+    } else {
+      console.log(`ERROR: You can assing only ID variables, \nlexem ${lexTable[index + 1].token} at ${lexTable[index + 1].index}`);
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'unary-operator') {
+    //console.log('unary-operator', lexem);
+    if (lexTable[index + 1].type === 'ID') {
+      index++;
+      checking(lexTable, index);
+    } else {
+      console.log(`ERROR: Unary operators can be used only after IDs, \nlexem ${lexTable[index + 1].token} at ${lexTable[index + 1].index}`);
+      process.exit(0);
+    }
+  }
+  if (lexem.type === 'parenthesis-operator') {
+    //console.log('parenthesis-operator', lexem);
+    if (lexem.name === 'T_LEFT_BRACKET' ||
+    lexem.name === 'T_LEFT_PARENTHESIS') {
+      if (lexTable[index - 1].name === 'integers' ||
+      lexTable[index - 1].name === 'floats') {
+        console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
+        process.exit(0);
+      }
+      if (lexTable[index + 1].name === 'ids' || lexTable[index + 1].name === 'integers') {
+        index++;
+        checking(lexTable, index);
+      } else {
+        console.log(`ERROR: Something wrong with your brackets, \nlexem '${lexTable[index + 1].token}' at index ${lexTable[index + 1].index}`);
+        process.exit(0);
+      }
+    }
+    if (lexem.name === 'T_RIGHT_BRACKET' ||
+    lexem.name === 'T_RIGHT_PARENTHESIS') {
+      if (lexTable[index + 1].type === 'ID') {
+        console.log(`ERROR: You can't use ID right after brackets, \nlexem ${lexTable[index + 1].token} at index ${lexTable[index + 1].index}`);
+        process.exit(0);
+      }
+    } else {
+      index++;
+      checking(lexTable, index);
+    }
+  }
+  if (lexem.type === 'condition_operator') {
+    //console.log('condition_operator', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  if (lexem.type === 'selection-statement') {
+    //console.log('selection-statement', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  if (lexem.type === 'iteration-statement') {
+    //console.log('iteration-statement', lexem);
+    index++;
+    checking(lexTable, index);
+  }
+  return 'syntax is correct';
+};
+
+
+
+
 //isIfCorrect(lexems);
 isLoopCorrect(lexems);
 const tree = buildTree(lexems);
 getTreeFormated(tree);
 console.log(lexems);
+console.log(checking(lexems, 0));
