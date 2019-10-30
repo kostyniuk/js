@@ -121,7 +121,7 @@ ids = ids.filter((obj) => obj);
 let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
 floats = floats.filter((obj) => obj);
 
-let integers = expressions.map(el => el.match(/\W\d+\W+/g)).flat();
+let integers = expressions.map(el => el.match(/\W\d+/g)).flat();
 
 integers = integers.filter(Boolean).map(el => el.match(/\d+/g));
 integers = integers.filter((obj) => obj);
@@ -223,8 +223,6 @@ const loggingEndErr = n => {
   }
 };
 
-//console.log(lexems);
-
 loggingEndErr(howManyEnds(lexems));
 
 const isEndIsSemicoln = table => {
@@ -269,8 +267,16 @@ const isOpenBracketBefore = (lexemTable, index) => {
   }
   const leftBrIsOpen = (lBr - rBr > 0);
   const leftPrIsOpen = (lPr - rPr > 0);
-  return { 'T_RIGHT_BRACKET': leftBrIsOpen, 'T_RIGHT_PARENTHESIS': leftPrIsOpen };
+  return { 'T_RIGHT_BRACKET': leftBrIsOpen, 'T_RIGHT_PARENTHESIS': leftPrIsOpen, all: [lBr - rBr, lPr - rPr] };
 };
+
+const bracket = isOpenBracketBefore(lexems, lexems.length).all;
+bracket.forEach((el) => {
+  if (el !== 0) {
+    console.log('ERROR: Quantity of brackets doesnt match');
+    process.exit(1);
+  }
+});
 
 const isLoopRangesRight = table => {
   table.forEach((lexem, i, arr) => {
@@ -304,7 +310,6 @@ const isEndCouldBeUsed = table => {
     }
   });
 }
-
 
 isLoopRangesRight(lexems)
 isEndCouldBeUsed(lexems)
@@ -464,18 +469,26 @@ const checking = (lexTable, index) => {
     //console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
+      if (lexTable[index + 1].name === 'T_LEFT_BRACKET' || 
+      lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
+        console.log(`ERROR: So many '${lexem.token} at ${lexem.index} index'`);
+        process.exit(1)
+       }
       if (lexTable[index - 1].name !== 'ids') {
-        console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
-        process.exit(0);
+        if (lexTable[index - 1].name !== 'T_RIGHT_BRACKET')
+          console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
+          process.exit(0);
       }
       if (lexTable[index + 1].name === 'ids' || lexTable[index + 1].name === 'integers') {
         index++;
         checking(lexTable, index);
+      
       } else {
         console.log(`ERROR: Something wrong with your brackets, \nlexem '${lexTable[index + 1].token}' at index ${lexTable[index + 1].index}`);
         process.exit(0);
       }
     }
+
     if (lexem.name === 'T_RIGHT_BRACKET' ||
     lexem.name === 'T_RIGHT_PARENTHESIS') {
       const current = lexem.name;
@@ -514,5 +527,5 @@ const checking = (lexTable, index) => {
 isLoopCorrect(lexems);
 const tree = buildTree(lexems);
 getTreeFormated(tree);
-console.log(lexems);
+//console.log(lexems);
 console.log(checking(lexems, 0));
