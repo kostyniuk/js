@@ -488,6 +488,65 @@ const isOneArrIncludesAntother = (arr1, arr2) => {
   //return true;
 };
 
+const getOutput = table => {
+  for(const variable of table) {
+    if (variable.type === 'double') {
+      const output = `'${variable.name}': ${variable.type} {${variable.value}.0}`;
+      console.log(output)
+    }
+    else {
+      const output = `'${variable.name}': ${variable.type} {${variable.value}}`;
+      console.log(output)
+    }
+  }
+}
+
+const makeArr = table => {
+  let original = table;
+  let arr = [];
+  let name;
+  let type = '';
+  for(let i =0; i < table.length; i++) {
+    if (table[i].name.includes('[')) {
+      const index = table[i].name.indexOf('[');
+      name = table[i].name.slice(0, index);
+      type = table[i].type
+      arr.push(table[i].value);
+    }
+  }
+
+  for(let i =0; i < table.length; i++) {
+    if (table[i].name.includes(name)) {
+      table.splice(i, 1);
+      i--;
+    }
+  }
+  if (type.includes('double')) {
+    arr = arr.map(el => `${el}.0`);
+  }
+  table.push({name, 'value': arr, type });
+  return table;
+}
+
+const evalContentOfBrackets = exp => {
+  let str = exp;
+  let flag = true;
+  let results = [];
+  while (flag) {
+    let start = str.indexOf('[');
+    let end = str.indexOf(']');
+    const expression = str.substring(start + 1, end);
+    results.push({ from: start, to: end, expression });
+    str = str.replace('[', '');
+    str = str.replace(']', '');
+    start = str.indexOf('[');
+    end = str.indexOf(']');
+    if (start === -1) flag = false;
+  }
+  // change indexes in expression
+  return results;
+}
+
 const calculations = (expression, table) => {
   let names = [];
   for (const obj of table) {
@@ -502,7 +561,6 @@ const calculations = (expression, table) => {
   for (let i = 0; i < idsFlatted.length; i++) {
     let includes = false;
     for (let j = 0; j < names.length; j++) {
-      //console.log('hj')
       if (idsFlatted[i] === names[j]) includes = true;
       //console.log(includes)
     }
@@ -547,40 +605,63 @@ const calculations = (expression, table) => {
       i--;
     }
   }
+  console.log({ expression })
+  const evalled = evalContentOfBrackets(expression);
+  console.log(evalled)
+
+
+
   for (const variable of table) {
     if (expression.includes(variable.name) && expression[expression.indexOf(variable.name) + 1] !== '=') {
       expression = expression.replace(variable.name, variable.value);
     }
   }
-
+  console.log({ table })
+  console.log({ expression })
+  
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
+  console.log(splitted);
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
   }
-  console.log(hash);
+  console.log({ hash });
   const results = [];
+  console.log(hash)
   for (const el in hash) {
     const value = eval(hash[el]);
-    results.push({'variable' : el, value});
+    results.push({'name' : el, value});
   }
-  console.log(results);
+  //console.log(results);
+  //console.log(table);
+  for(let i =0; i < table.length; i++) {
+    for(let j = 0; j < results.length; j++) {
+      if (table[i].name === results[j].name) {
+        table[i].value = results[j].value
+      }
+    }
+  }
+  table = makeArr(table);
+  getOutput(table);
+
 };
 
 lexems  = setArrayTypes(lexems);
+//console.log(lexems);
 const arrOfAssign = getOnlyAssignments(lexems);
+console.log(arrOfAssign);
+//process.exit(0)
 const variables = inizializationWithTypes(lexems);
-console.log(variables);
 const info = addValues(arrOfAssign, variables, lexems);
-calculations('b=2*a[n]; n=d;', info);
+calculations('b=2*a[n]+d * a[n+1]; n=d;', info);
 //console.log(lexems);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
-    console.log('Syntax is correct');
+    //console.log('Syntax is correct');
     process.exit(0);
   }
   const lexem = lexTable[index];
@@ -744,7 +825,7 @@ const checking = (lexTable, index) => {
     index++;
     checking(lexTable, index);
   }
-  return 'syntax is correct';
+  //return 'syntax is correct';
 };
 
-console.log(checking(lexems, 0));
+checking(lexems, 0);
