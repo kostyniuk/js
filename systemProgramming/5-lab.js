@@ -93,7 +93,7 @@ const errorLogging = (issue) => {
 };
 
 let str = process.argv[2];
-str = str.toLowerCase();
+str = str.toLowerCase() + ' ';
 if (str.match(cyrillicPattern)) {
   errorLogging('Something went wrong.\nTry another expression.');
 }
@@ -254,6 +254,24 @@ const isEndIsSemicoln = table => {
   });
 };
 
+const isOpenBracketBefore = (lexemTable, index) => {
+  let lBr = 0;
+  let rBr = 0;
+  let lPr = 0;
+  let rPr = 0;
+  //console.log({ lexemTable })
+  for (let i = 0; i < index; i++) {
+    //console.log(lexemTable[i]);
+    if (lexemTable[i].token === '[') lBr++;
+    if (lexemTable[i].token === ']') rBr++;
+    if (lexemTable[i].token === '(') lPr++;
+    if (lexemTable[i].token === ')') rPr++;
+  }
+  const leftBrIsOpen = (lBr - rBr > 0);
+  const leftPrIsOpen = (lPr - rPr > 0);
+  return { 'T_RIGHT_BRACKET': leftBrIsOpen, 'T_RIGHT_PARENTHESIS': leftPrIsOpen };
+};
+
 const isLoopRangesRight = table => {
   table.forEach((lexem, i, arr) => {
     if (lexem.token === 'to') {
@@ -266,7 +284,7 @@ const isLoopRangesRight = table => {
 }
 
 const isBeginBefore = (table, index) => {
-  table = table.slice(0, index)
+  table = table.slice(0, index);
   let ends = 0;
   let begins = 0;
   table.forEach((lexem, i, arr) => {
@@ -286,6 +304,7 @@ const isEndCouldBeUsed = table => {
     }
   });
 }
+
 
 isLoopRangesRight(lexems)
 isEndCouldBeUsed(lexems)
@@ -376,11 +395,6 @@ const checking = (lexTable, index) => {
     }
   }
   if (lexem.type === 'ID') {
-    // if (lexTable[index + 1].token === ':=') {
-    //   console.log('here')
-    //   index++;
-    //   checking(lexTable, index);
-    // }
     if (lexTable[index + 1].type === 'assignment_operator' ||
       lexTable[index + 1].token === ':=' ||
       lexTable[index + 1].type === 'unary-operator' ||
@@ -392,20 +406,14 @@ const checking = (lexTable, index) => {
       index++;
       checking(lexTable, index);
     }
-    //console.log({ index: lexTable[index] });
-    //console.log({ lexem });
     if (lexTable[index + 1].type === 'ID') {
-      //console.log({ lexem })
-      //console.log('-------------------');
-      //console.log({ current: lexTable[index], next: lexTable[index + 1] });
-      //console.log('-------------------');
-      //console.log(`Error: id right after id, \nlexem '${lexTable[index + 1].token}' at ${lexTable[index + 1].index} index`);
+      console.log(`Error: id right after id, \nlexem '${lexTable[index + 1].token}' at ${lexTable[index + 1].index} index`);
       process.exit(0);
     }
     if (lexTable[index + 1].type === 'parenthesis-operator') {
       //const isBrOpened = isOpenBracketBefore(lexTable, index);
       if (lexTable[index + 1].name === 'T_RIGHT_BRACKET' ||
-        lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+        lexTable[index + 1].name === 'T_RIGHT_PARENTHESIS') {
         index++;
         checking(lexTable, index);
       }
@@ -415,7 +423,7 @@ const checking = (lexTable, index) => {
         checking(lexTable, index);
       }
 
-      if (lexTable[index + 1].name === 'T_RIGHT_PARANTHESIS') {
+      if (lexTable[index + 1].name === 'T_RIGHT_PARENTHESIS') {
         index++;
         checking(lexTable, index);
       }
@@ -456,8 +464,7 @@ const checking = (lexTable, index) => {
     //console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
-      if (lexTable[index - 1].name === 'integers' ||
-      lexTable[index - 1].name === 'floats') {
+      if (lexTable[index - 1].name !== 'ids') {
         console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
         process.exit(0);
       }
@@ -471,6 +478,11 @@ const checking = (lexTable, index) => {
     }
     if (lexem.name === 'T_RIGHT_BRACKET' ||
     lexem.name === 'T_RIGHT_PARENTHESIS') {
+      const current = lexem.name;
+      if (!isOpenBracketBefore(lexTable, index)[current]) {
+        console.log(`ERROR: So many '${lexem.token} at ${lexem.index} index'`);
+        process.exit(1)
+      }
       if (lexTable[index + 1].type === 'ID') {
         console.log(`ERROR: You can't use ID right after brackets, \nlexem ${lexTable[index + 1].token} at index ${lexTable[index + 1].index}`);
         process.exit(0);
@@ -497,9 +509,6 @@ const checking = (lexTable, index) => {
   }
   return 'syntax is correct';
 };
-
-
-
 
 //isIfCorrect(lexems);
 isLoopCorrect(lexems);
