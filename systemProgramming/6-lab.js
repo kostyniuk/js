@@ -408,7 +408,7 @@ const inizializationWithTypes = (lexems) => {
   for (const lexem of lexems) {
     if (lexem.Type) {
       const type = lexem.Type;
-      const typeName = type.replace(/[^A-Za-z]/g, "")
+      const typeName = type.replace(/[^A-Za-z]/g, '');
       const keywords = Object.keys(tokenss.keyword['type-operator']);
       if (!keywords.includes(typeName)) {
         console.log(`ERROR: Wrong type: ${type}`);
@@ -449,7 +449,37 @@ const separationOfNamesAndValues = arr => {
   return result;
 };
 
+const getArrThatLessThanInt = int => {
+  const arr = [];
+  for (let i = 0; i < int; i++) {
+    arr.push(i);
+  }
+  return arr;
+};
 
+const sortArrOfObjByField = (arr, field) => {
+  let withField = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i][field]) {
+      withField.push(arr[i]);
+      arr.splice(i, 1);
+      i--;
+    }
+  }
+  withField = withField.sort((a, b) => {
+    const keyA = a[field];
+    const keyB = b[field];
+    // Compare the 2 dates
+    if(keyA < keyB) return -1;
+    if(keyA > keyB) return 1;
+    return 0;
+});
+  return [...withField, ...arr];
+};
+
+const randomIntFromInterval = (min, max) => { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 const addValues = (arrOfExpr, obj, lexems) => {
   //console.log(arrOfExpr);
@@ -460,7 +490,8 @@ const addValues = (arrOfExpr, obj, lexems) => {
       data[i].push(lexem.token);
     });
   });
-  const arrOfVar = separationOfNamesAndValues(data);
+  //console.log({ data });
+  let arrOfVar = separationOfNamesAndValues(data);
   for (let i = 0; i < lexems.length; i++) {
     for (let j = 0; j < arrOfVar.length; j++) {
       if (lexems[i].token === arrOfVar[j].name) {
@@ -477,7 +508,39 @@ const addValues = (arrOfExpr, obj, lexems) => {
       }
     }
   }
-  return arrOfVar;
+
+  const current = 0;
+  let max = 0;
+  const indexes = [];
+  let indexesAll = [];
+  const res = [];
+  arrOfVar = arrOfVar.map((record, i, table) => {
+    if (record.index) {
+      max = record.type.match(/\d+/)[0];
+      indexes.push(parseInt(record.index));
+      if (!table[i + 1].index) {
+        indexesAll = getArrThatLessThanInt(max);
+        //console.log(indexes, indexesAll);
+        res.push(record);
+        for (let j = 0; j < indexesAll.length; j++) {
+          if (!indexes.includes(indexesAll[j])) {
+            //console.log(indexesAll[j]);
+            //res.push(record)
+            res.push({ name: record.name, index: indexesAll[j].toString(), value: randomIntFromInterval(-1000, 1000), type: record.type });
+          }
+        }
+        record = '';
+      }
+    }
+
+    if (record) res.push(record);
+
+    return record;
+  });
+  let results = res;
+  const final = sortArrOfObjByField(res, 'index');
+  //console.log(results)
+  return final;
 };
 
 const isOneArrIncludesAntother = (arr1, arr2) => {
@@ -636,7 +699,7 @@ const calculations = (expression, table) => {
   splitted = splitted.map(el => el.trim());
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
-  //console.log(splitted);
+  console.log(splitted);
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
@@ -675,7 +738,7 @@ const arrOfAssign = getOnlyAssignments(lexems);
 const variables = inizializationWithTypes(lexems);
 //console.log(variables)
 const info = addValues(arrOfAssign, variables, lexems);
-console.log(info)
+//console.log(info);
 calculations(process.argv[3], info);
 //console.log(lexems);
 
