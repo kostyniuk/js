@@ -408,6 +408,12 @@ const inizializationWithTypes = (lexems) => {
   for (const lexem of lexems) {
     if (lexem.Type) {
       const type = lexem.Type;
+      const typeName = type.replace(/[^A-Za-z]/g, "")
+      const keywords = Object.keys(tokenss.keyword['type-operator']);
+      if (!keywords.includes(typeName)) {
+        console.log(`ERROR: Wrong type: ${type}`);
+        process.exit(1);
+      }
       variables[lexem.token] = { type };
     }
   }
@@ -489,33 +495,32 @@ const isOneArrIncludesAntother = (arr1, arr2) => {
 };
 
 const getOutput = table => {
-  for(const variable of table) {
+  for (const variable of table) {
     if (variable.type === 'double') {
       const output = `'${variable.name}': ${variable.type} {${variable.value}.0}`;
-      console.log(output)
-    }
-    else {
+      console.log(output);
+    } else {
       const output = `'${variable.name}': ${variable.type} {${variable.value}}`;
-      console.log(output)
+      console.log(output);
     }
   }
-}
+};
 
 const makeArr = table => {
-  let original = table;
+  const original = table;
   let arr = [];
   let name;
   let type = '';
-  for(let i =0; i < table.length; i++) {
+  for (let i = 0; i < table.length; i++) {
     if (table[i].name.includes('[')) {
       const index = table[i].name.indexOf('[');
       name = table[i].name.slice(0, index);
-      type = table[i].type
+      type = table[i].type;
       arr.push(table[i].value);
     }
   }
 
-  for(let i =0; i < table.length; i++) {
+  for (let i = 0; i < table.length; i++) {
     if (table[i].name.includes(name)) {
       table.splice(i, 1);
       i--;
@@ -524,28 +529,35 @@ const makeArr = table => {
   if (type.includes('double')) {
     arr = arr.map(el => `${el}.0`);
   }
-  table.push({name, 'value': arr, type });
+  table.push({ name, 'value': arr, type });
   return table;
-}
+};
 
 const evalContentOfBrackets = exp => {
   let str = exp;
   let flag = true;
-  let results = [];
+  const results = [];
   while (flag) {
     let start = str.indexOf('[');
     let end = str.indexOf(']');
     const expression = str.substring(start + 1, end);
     results.push({ from: start, to: end, expression });
-    str = str.replace('[', '');
-    str = str.replace(']', '');
+    str = str.replace('[', ';');
+    str = str.replace(']', ';');
     start = str.indexOf('[');
     end = str.indexOf(']');
     if (start === -1) flag = false;
   }
-  // change indexes in expression
-  return results;
-}
+  let strRes;
+  for (let i = 0; i < results.length; i++) {
+    const beginning = exp.slice(0, results[i].from + 1);
+    const last = exp.slice(results[i].to);
+    exp = `${beginning}${eval(results[i].expression)}${last}`;
+    //console.log({beginning, last});
+  }
+  //console.log({str})
+  return exp;
+};
 
 const calculations = (expression, table) => {
   let names = [];
@@ -558,6 +570,7 @@ const calculations = (expression, table) => {
   expressions = expressions.map(el => el.trim());
   const ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
   const idsFlatted = Array.from(new Set(ids.flat()));
+  console.log({ expression });
   for (let i = 0; i < idsFlatted.length; i++) {
     let includes = false;
     for (let j = 0; j < names.length; j++) {
@@ -605,9 +618,9 @@ const calculations = (expression, table) => {
       i--;
     }
   }
-  console.log({ expression })
+  //console.log({ expression });
   const evalled = evalContentOfBrackets(expression);
-  console.log(evalled)
+  expression = evalled;
 
 
 
@@ -616,31 +629,36 @@ const calculations = (expression, table) => {
       expression = expression.replace(variable.name, variable.value);
     }
   }
-  console.log({ table })
-  console.log({ expression })
-  
+  //console.log({ table });
+  //console.log({ expression });
+
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
-  console.log(splitted);
+  //console.log(splitted);
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
   }
-  console.log({ hash });
+  //console.log({ hash });
   const results = [];
-  console.log(hash)
+  //console.log(hash);
   for (const el in hash) {
-    const value = eval(hash[el]);
-    results.push({'name' : el, value});
+    try {
+      const value = eval(hash[el]);
+      results.push({ 'name': el, value });
+    } catch (e) {
+      console.log(`ERROR: You haven't define the variable(s) to assign to ${el}`);
+      process.exit(1);
+    }
   }
   //console.log(results);
   //console.log(table);
-  for(let i =0; i < table.length; i++) {
-    for(let j = 0; j < results.length; j++) {
+  for (let i = 0; i < table.length; i++) {
+    for (let j = 0; j < results.length; j++) {
       if (table[i].name === results[j].name) {
-        table[i].value = results[j].value
+        table[i].value = results[j].value;
       }
     }
   }
@@ -652,11 +670,13 @@ const calculations = (expression, table) => {
 lexems  = setArrayTypes(lexems);
 //console.log(lexems);
 const arrOfAssign = getOnlyAssignments(lexems);
-console.log(arrOfAssign);
+//console.log(arrOfAssign);
 //process.exit(0)
 const variables = inizializationWithTypes(lexems);
+//console.log(variables)
 const info = addValues(arrOfAssign, variables, lexems);
-calculations('b=2*a[n]+d * a[n+1]; n=d;', info);
+console.log(info)
+calculations(process.argv[3], info);
 //console.log(lexems);
 
 const checking = (lexTable, index) => {
