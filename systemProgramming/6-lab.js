@@ -371,7 +371,6 @@ const setArrayTypes = lexems => {
     }
   });
   return original;
-
 };
 
 const getOnlyAssignments = lexems => {
@@ -414,7 +413,7 @@ const inizializationWithTypes = (lexems) => {
       //console.log(lexems)
       const keywords = Object.keys(tokenss.keyword['type-operator']);
       if (!keywords.includes(typeName)) {
-        console.log(`ERROR: Wrong type: ${type}`);
+        console.log(`ERROR: Wrong type: ${type} at ${lexem.index} index.`);
         process.exit(1);
       }
       variables[lexem.token] = { type };
@@ -511,7 +510,7 @@ const addValues = (arrOfExpr, obj, lexems) => {
           if (lexems[i].Type[lexems[i].Type.length - 1] === ']') {
             const num = lexems[i].Type.match(/\d+/)[0];
             if (num - 1 < arrOfVar[j].index) {
-              console.log(`ERROR: Index out of range: ${arrOfVar[j].name}[${arrOfVar[j].index}]`);
+              console.log(`ERROR: Index out of range: ${arrOfVar[j].name} at [${arrOfVar[j].index}] index`);
               process.exit(1);
             }
           }
@@ -528,7 +527,7 @@ const addValues = (arrOfExpr, obj, lexems) => {
   const res = [];
   arrOfVar = arrOfVar.map((record, i, table) => {
     if (!record.type) {
-      console.log(`ERROR: Unresolved value: ${record.name}`);
+      console.log(`ERROR: Unresolved value: ${record.name} at ${record.index} index.`);
       process.exit(1);
     }
     if (record.index) {
@@ -671,6 +670,32 @@ const calculations = (expression, table) => {
       if (lexem.token === variable.name && !variable.index) { lexem.value = variable.value; }
     }
   }
+  lexems = lexems.filter(lex => lex.index !== -1);
+  const idLexems = lexems.filter(lexem => {
+    if (lexem.name === 'ids' || lexem.token === '=' || lexem.token === ';') return lexem;
+  });
+  console.log({ idLexems });
+
+  const scIndexes = [0];
+  const expsArr = [];
+  let counter = 0;
+
+  idLexems.forEach((el, i, table) => {
+    if (el.token === ';') {
+      scIndexes.push(i);
+    }
+  })
+
+  // map [[0, 4], [4, 8]]
+  // for(let i = 0; i < scIndexes.length; i++) {
+  //   expsArr[i] = [];
+  //   for
+  // }
+
+  console.log({ scIndexes })
+  const tokenArr = lexems.map(el => el.token);
+  const exps = tokenArr.join('').split(';').filter(el => !!el)
+  //console.log({ exps })
   for (let i = 0; i < idsFlatted.length; i++) {
     for (let j = 0; j < lexems.length; j++) {
       if (idsFlatted[i] === lexems[j].token && lexems[j].value && lexems[j + 1].token !== '=') {
@@ -697,7 +722,9 @@ const calculations = (expression, table) => {
       i--;
     }
   }
-  //console.log({ expression });
+
+  console.log({ table })
+  console.log({ expression });
   const evalled = evalContentOfBrackets(expression);
   expression = evalled;
 
@@ -748,7 +775,7 @@ const calculations = (expression, table) => {
 
 };
 
-const actions = process.argv[3]
+const actions = process.argv[3];
 
 lexems  = setArrayTypes(lexems);
 const isEndGood = lexems => {
