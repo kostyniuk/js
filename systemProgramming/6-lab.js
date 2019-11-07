@@ -299,8 +299,7 @@ const getAssignments = (lexTable, types) => {
             if (lexTable[j].name === 'T_SEMICOLON') {
               semicolonBef = lexTable[j].index + 1;
               break;
-            }
-            else semicolonBef = 0
+            } else semicolonBef = 0;
           }
           for (let j = i; j < lexems.length; j++) {
             if (lexTable[j].name === 'T_SEMICOLON') {
@@ -484,7 +483,7 @@ const randomIntFromInterval = (min, max) =>  // min and max included
 ;
 
 const addValues = (arrOfExpr, obj, lexems) => {
-  const keys = Object.keys(obj)
+  const keys = Object.keys(obj);
   const data = [];
   arrOfExpr.forEach((expression, i, arr) => {
     data[i] = [];
@@ -493,12 +492,12 @@ const addValues = (arrOfExpr, obj, lexems) => {
     });
   });
   const namesVar = [];
-  data.forEach(el => namesVar.push(el[0]))
+  data.forEach(el => namesVar.push(el[0]));
 
-  
-  for(let i = 0; i < keys.length; i++) {
+
+  for (let i = 0; i < keys.length; i++) {
     if (!namesVar.includes(keys[i])) {
-      data.push([keys[i].toString(), '=', randomIntFromInterval(-100000000, 1000000000).toString() ])
+      data.push([keys[i].toString(), '=', randomIntFromInterval(-100000000, 1000000000).toString() ]);
     }
   }
   //console.log({ data, namesVar });
@@ -637,7 +636,7 @@ const evalContentOfBrackets = exp => {
   return exp;
 };
 
-const calculations = (expression, table) => {
+const calculations = (expression, table, variables) => {
   let names = [];
   for (const obj of table) {
     names.push(obj.name);
@@ -672,29 +671,105 @@ const calculations = (expression, table) => {
   }
   lexems = lexems.filter(lex => lex.index !== -1);
   const idLexems = lexems.filter(lexem => {
-    if (lexem.name === 'ids' || lexem.token === '=' || lexem.token === ';') return lexem;
+    if (lexem.name === 'ids' || lexem.token === '=' || lexem.token === ';' || lexem.token === '[' || lexem.token === ']') return lexem;
   });
-  console.log({ idLexems });
 
-  const scIndexes = [0];
-  const expsArr = [];
-  let counter = 0;
+  let scIndexes = [0];
+  let expsArr = [];
+  const counter = 0;
 
   idLexems.forEach((el, i, table) => {
     if (el.token === ';') {
-      scIndexes.push(i);
+      scIndexes.push(el.index);
+    }
+  });
+
+  scIndexes = scIndexes.map((el, i, arr) => {
+    if (i !== 0) {
+      return [arr[i - 1], arr[i]];
+    }
+  }).filter(el => !!el);
+
+  for(let i = 0; i < scIndexes.length; i++) {
+    expsArr[i] = []
+  }
+
+  idLexems.forEach((el, i, arr) => {
+    for(let i = 0; i < scIndexes.length; i++) {
+      if (el.index >= scIndexes[i][0] && el.index <= scIndexes[i][1]) {
+        
+        expsArr[i].push(el);
+      }
     }
   })
 
-  // map [[0, 4], [4, 8]]
-  // for(let i = 0; i < scIndexes.length; i++) {
-  //   expsArr[i] = [];
-  //   for
-  // }
+  let divided = expsArr;
+  divided = divided.map(el => ({ before: [], after: [] }))
+  console.log(divided)
 
-  console.log({ scIndexes })
+
+
+  expsArr.forEach((arr, i, table) => {
+    arr.forEach((lex, j, arrOfExp) => {
+      if (lex.token === '=') {
+        for (let k = 0; k < arrOfExp.length; k++) {
+          if (k < j) {
+            divided[i].before.push(arrOfExp[k]);
+          } else {
+            divided[i].after.push(arrOfExp[k]);
+          }
+        }
+      }
+    })
+  })
+
+  divided = divided.map(obj => {
+    obj.after = obj.after.map((lex, i, arr) => {
+      if(lex.name === 'ids' && arr[i - 1].token !== '[') return lex;
+    })
+    obj.after = obj.after.filter(el => !!el);
+    obj.before = obj.before.map((lex, i, arr) => {
+      if(lex.name === 'ids') return lex;
+    })
+    obj.before = obj.before.filter(el => !!el);
+
+    return obj;
+    
+  })
+
+  //divided.forEach(arr => console.log(arr))
+  //console.log(variables)
+
+  divided = divided.map((obj, i, arr) => {
+    obj.before.map((lexem, j, arrIn) => { 
+     lexem.Type = variables[lexem.token].type;
+     return lexem;
+    })
+    obj.after.map((lexem, j, arrIn) => { 
+      lexem.Type = variables[lexem.token].type;
+      return lexem;
+     })
+    return obj
+  })
+
+  divided.forEach((el, i, table) => {
+    const before = el.before;
+    //console.log(before[0].Type)
+    const after = el.after;
+    for(let i = 0; i < after.length; i++) {
+      if (!after[i].Type.includes(before[0].Type)) {
+        console.log('Wrong types');
+        console.log(before[0].Type);
+        console.log('after ', after[i].Type);
+        process.exit(1)
+      }
+    }
+  })
+
+  //console.log(expsArr)
+  //console.log({ scIndexes });
   const tokenArr = lexems.map(el => el.token);
-  const exps = tokenArr.join('').split(';').filter(el => !!el)
+  const exps = tokenArr.join('').split(';').filter(el => !!el);
   //console.log({ exps })
   for (let i = 0; i < idsFlatted.length; i++) {
     for (let j = 0; j < lexems.length; j++) {
@@ -723,7 +798,7 @@ const calculations = (expression, table) => {
     }
   }
 
-  console.log({ table })
+  console.log({ table });
   console.log({ expression });
   const evalled = evalContentOfBrackets(expression);
   expression = evalled;
@@ -732,7 +807,7 @@ const calculations = (expression, table) => {
   //   if (expression[i] === ' ') expression = expression.replace(' ', '');
   // }
   expression = expression.replace(/ /g, '');
-  console.log({new: expression})
+  console.log({ new: expression });
   for (const variable of table) {
     if (expression.includes(variable.name) && expression[expression.indexOf(variable.name) + 1] !== '=') {
       expression = expression.replace(variable.name, variable.value);
@@ -781,22 +856,22 @@ lexems  = setArrayTypes(lexems);
 const isEndGood = lexems => {
   if (!lexems[lexems.length - 1].token === ';') {
     console.log('ERROR: Expression should be followed with \';\'');
-    process.exit(1)
+    process.exit(1);
   }
-}
+};
 isEndGood(lexems);
 if (actions[actions.length - 1] !== ';') {
   console.log('ERROR: Expression should be followed with \';\'');
-  process.exit(1)
+  process.exit(1);
 }
 const arrOfAssign = getOnlyAssignments(lexems);
-//console.log(arrOfAssign);
+// arrOfAssign.forEach(console.log)
 const variables = inizializationWithTypes(lexems);
 //console.log(variables)
 //process.exit(0)
 const info = addValues(arrOfAssign, variables, lexems);
 //console.log(info);
-calculations(actions, info);
+calculations(actions, info, variables);
 //console.log(lexems);
 
 const checking = (lexTable, index) => {
