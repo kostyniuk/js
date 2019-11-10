@@ -702,10 +702,10 @@ const calculations = (expression, table, variables) => {
   });
 
   let divided = expsArr;
-  divided = divided.map(el => ({ before: [], after: [] }));
+  divided = divided.map(() => ({ before: [], after: [] }));
   //console.log(divided);
 
-  expsArr.forEach((arr, i, table) => {
+  expsArr.forEach((arr, i) => {
     arr.forEach((lex, j, arrOfExp) => {
       if (lex.token === '=') {
         for (let k = 0; k < arrOfExp.length; k++) {
