@@ -5,37 +5,30 @@ const app = express();
 
 const PORT = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!!!');
-});
+app.get('/', (req, res, next) => {
+  console.log('First middleware');
+  next();
+}, (req, res) => {
+  res.send('Final middleware');
+}
+);
 
-app.post('/', (req, res) => {
-  res.send('Get a POST request');
-});
+const cb1 = (req, res, next) => {
+  console.log('Middleware 1');
+  setTimeout(() => console.log('Timeout end'), 5000);
+  next();
+};
 
-app.put('/', (req, res) => {
-  res.send('Get a UPDATE request');
-});
+const cb2 = (req, res, next) => {
+  console.log('Middleware 2');
+  next();
+};
 
-app.delete('/', (req, res) => {
-  res.send('Get a DELETE request');
-});
+const cb3 = (req, res) => {
+  res.send('Final2 middleware');
+};
 
-app.get('/users/:usedID/books/:bookId', (req, res) => {
-  const { params } = req;
-  res.send({ params });
-});
-
-app.get('/flights/:from-:to', (req, res) => {
-  const { params } = req;
-  res.send(`The flight is from ${params.from} to ${params.to}`);
-});
-
-app.get('/subTwo/:first-:second', (req, res) => {
-  const { params } = req;
-  res.send(`The sum of ${params.first} and ${params.second} is 
-  ${eval(`${params.first}-${params.second}`)}`);
-});
+app.get('/info', [cb1, cb2, cb3]);
 
 app.listen(PORT, (err) => {
   if (err) return console.error(err);
