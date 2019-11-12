@@ -30,16 +30,16 @@ app.get('/', (req, res) => {
 });
 
 app.get('/user/:id', (req, res, next) => {
-  console.log('ID:', req.params.id);
-  next();
+  // if the user ID is 0, skip to the next route
+  if (req.params.id === '0') next('route');
+  // next('route') allows us to have same paths and methods
+  else next();
 }, (req, res) => {
-  res.send('User Info');
+  res.send(`Not 0, but ${req.params.id}`);
 });
 
-// handler for the /user/:id path, which prints the user ID
-// won't be ever get called
 app.get('/user/:id', (req, res) => {
-  res.end(req.params.id);
+  res.send(`special : ${req.params.id}`);
 });
 
 app.listen(PORT, (err) => {
