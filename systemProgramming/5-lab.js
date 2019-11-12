@@ -239,7 +239,7 @@ const isEndIsSemicoln = table => {
           console.log(`You have an error at ${arr[i].index} index`);
           process.exit(1);
         }
-      } 
+      }
     }
     if (lexem.token === 'end' && lexem.index !== 0) {
       if (arr[i - 1].name !== 'T_SEMICOLON') {
@@ -283,11 +283,11 @@ const isLoopRangesRight = table => {
     if (lexem.token === 'to') {
       if (parseInt(arr[i - 1].token) > parseInt(arr[i + 1].token)) {
         console.log('ERROR: Unresolved ranges of loop');
-        process.exit(1)
+        process.exit(1);
       }
     }
-  })
-}
+  });
+};
 
 const isBeginBefore = (table, index) => {
   table = table.slice(0, index);
@@ -297,22 +297,22 @@ const isBeginBefore = (table, index) => {
     if (lexem.token === 'end') ends++;
     if (lexem.token === 'begin') begins++;
   });
-  return begins - ends
-}
+  return begins - ends;
+};
 
 const isEndCouldBeUsed = table => {
   table.forEach((lexem, i, arr) => {
     if (lexem.token === 'end') {
       if (!isBeginBefore(table, i)) {
         console.log('ERROR: End should be used with begin');
-        process.exit(1)
+        process.exit(1);
       }
     }
   });
-}
+};
 
-isLoopRangesRight(lexems)
-isEndCouldBeUsed(lexems)
+isLoopRangesRight(lexems);
+isEndCouldBeUsed(lexems);
 isEndIsSemicoln(lexems);
 
 const isLoopCorrect = (lexems) => {
@@ -331,7 +331,7 @@ const isLoopCorrect = (lexems) => {
         errorLogging('ERROR: You can assign only integers to id in FOR loop statement');
       }
       if (arr[index + 4].name !== 'T_TO') {
-        errorLogging(`ERROR: No TO keyword found in appropriate position in FOR loop statement at ${arr[index+4].index} index.`);
+        errorLogging(`ERROR: No TO keyword found in appropriate position in FOR loop statement at ${arr[index + 4].index} index.`);
       }
     }
     if (lexem.name === 'T_TO') {
@@ -341,8 +341,8 @@ const isLoopCorrect = (lexems) => {
         }
         if (arr[index - 4].name !== 'T_FOR') {
           errorLogging('ERROR: No FOR found at needed position found in FOR loop statement');
-        } 
-} catch (e) { errorLogging('ERROR: For is missed'); }
+        }
+      } catch (e) { errorLogging('ERROR: For is missed'); }
       if (arr[index + 2].name !== 'T_DO') {
         errorLogging('ERROR: No Do found in FOR loop statement');
       }
@@ -473,20 +473,20 @@ const checking = (lexTable, index) => {
     //console.log('parenthesis-operator', lexem);
     if (lexem.name === 'T_LEFT_BRACKET' ||
     lexem.name === 'T_LEFT_PARENTHESIS') {
-      if (lexTable[index + 1].name === 'T_LEFT_BRACKET' || 
+      if (lexTable[index + 1].name === 'T_LEFT_BRACKET' ||
       lexTable[index + 1].name === 'T_RIGHT_BRACKET') {
         console.log(`ERROR: So many '${lexem.token} at ${lexem.index} index'`);
-        process.exit(1)
-       }
+        process.exit(1);
+      }
       if (lexTable[index - 1].name !== 'ids') {
         if (lexTable[index - 1].name !== 'T_RIGHT_BRACKET')
           console.log(`ERROR: You should use [] operators only after variables, \nlexem '${lexTable[index - 1].token}' at index ${lexTable[index - 1].index}`);
-          process.exit(0);
+        process.exit(0);
       }
       if (lexTable[index + 1].name === 'ids' || lexTable[index + 1].name === 'integers') {
         index++;
         checking(lexTable, index);
-      
+
       } else {
         console.log(`ERROR: Something wrong with your brackets, \nlexem '${lexTable[index + 1].token}' at index ${lexTable[index + 1].index}`);
         process.exit(0);
@@ -498,7 +498,7 @@ const checking = (lexTable, index) => {
       const current = lexem.name;
       if (!isOpenBracketBefore(lexTable, index)[current]) {
         console.log(`ERROR: So many '${lexem.token} at ${lexem.index} index'`);
-        process.exit(1)
+        process.exit(1);
       }
       if (lexTable[index + 1].type === 'ID') {
         console.log(`ERROR: You can't use ID right after brackets, \nlexem ${lexTable[index + 1].token} at index ${lexTable[index + 1].index}`);
