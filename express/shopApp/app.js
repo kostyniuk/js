@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
@@ -10,6 +11,11 @@ const productsRoute = require('./api/routes/products');
 const ordersRoute = require('./api/routes/orders');
 
 const app = express();
+
+mongoose.connect(`mongodb+srv://kostyniuk:${process.env.MONGO_ATLAS_PW}@cluster0-aowjm.mongodb.net/test?retryWrites=true&w=majority`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
