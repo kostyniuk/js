@@ -4,14 +4,19 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 
-console.log(path.basename(__dirname));
-
 router.get('/', (req, res, next) => {
   res.send(`GET request to ${__filename}`);
 });
 
 router.post('/', (req, res, next) => {
-  res.send(`POST request to ${__filename}`);
+  const order  = {
+    name: req.body.name,
+    price: req.body.price
+  };
+  res.json({
+    'message': 'All went good',
+    order
+  });
 });
 
 router.get('/:orderId', (req, res, next) => {
