@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 const productsRoute = require('./api/routes/products');
 const ordersRoute = require('./api/routes/orders');
+const userRoute = require('./api/routes/user');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use('/products', productsRoute);
 app.use('/orders', ordersRoute);
+app.use('/user', userRoute);
 
 app.get('/', (req, res) => {
   res.send('Shop app main page');
