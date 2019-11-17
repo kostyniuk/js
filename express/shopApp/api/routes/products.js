@@ -38,7 +38,6 @@ router.post('/', (req, res, next) => {
   });
   product.save()
     .then(result => {
-
       const response = {
         _id: result._id,
         name: result.name,
@@ -63,27 +62,23 @@ router.post('/', (req, res, next) => {
 
 router.get('/:productId', (req, res, next) => {
   const id = req.params.productId;
-  console.log(id);
-  if (id.match(/^[0-9a-fA-F]{24}$/)) {
-    console.log('Yes, its a valid ObjectId');
-  } else {
-    console.log('Invalid ObjectId');
-  }
   Product.findById(id).exec()
     .then(doc => {
-      const response = {
-        _id: doc._id,
-        name: doc.name,
-        price: doc.price,
-        request: {
-          type: 'GET',
-          url: `http://localhost:3000/products/${doc._id}`
-        } };
-
-      console.log({ response });
-      res.status(200).json({
-        searchedRecord: response
-      });
+      if (doc) {
+        const response = {
+          _id: doc._id,
+          name: doc.name,
+          price: doc.price,
+          request: {
+            type: 'GET',
+            url: `http://localhost:3000/products/${doc._id}`
+          } };
+  
+        console.log({ response });
+        res.status(200).json({
+          searchedRecord: response
+        });
+      }
     })
     .catch(err => {
       console.log(err);
