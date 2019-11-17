@@ -9,10 +9,20 @@ const Product = require('../models/product');
 
 router.get('/', (req, res, next) => {
   Product.find()
+    .select('_id name price')
     .exec()
     .then(docs => {
+      const responce =
+        docs.map(doc => ({
+          _id: doc._id,
+          name: doc.name,
+          price: doc.price,
+          request: {
+            type: 'GET',
+            url: `http://localhost:3000/products/${doc._id}`
+          } }));
       console.log(docs);
-      res.json({ docs });
+      res.json({ responce });
     })
     .catch(err => {
       console.log(err);
@@ -27,12 +37,29 @@ router.post('/', (req, res, next) => {
     price: req.body.price
   });
   product.save()
-    .then(result => console.log(result))
-    .catch(err => console.log(err));
-  res.json({
-    message: product
-  });
+    .then(result => {
+
+      const response = {
+        _id: result._id,
+        name: result.name,
+        price: result.price,
+        request: {
+          type: 'POST',
+          url: `http://localhost:3000/products/${result._id}`
+        } };
+
+      console.log({ result });
+      res.status(200).json({
+        createdRecord: response
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ err });
+    });
 });
+
+
 
 router.get('/:productId', (req, res, next) => {
   const id = req.params.productId;
@@ -42,11 +69,21 @@ router.get('/:productId', (req, res, next) => {
   } else {
     console.log('Invalid ObjectId');
   }
-  //id = mongoose.Types.ObjectId(id);
   Product.findById(id).exec()
     .then(doc => {
-      console.log('From database: ' + doc);
-      res.status(200).json({ doc });
+      const response = {
+        _id: doc._id,
+        name: doc.name,
+        price: doc.price,
+        request: {
+          type: 'GET',
+          url: `http://localhost:3000/products/${doc._id}`
+        } };
+
+      console.log({ response });
+      res.status(200).json({
+        searchedRecord: response
+      });
     })
     .catch(err => {
       console.log(err);
@@ -65,8 +102,15 @@ router.put('/:productId', (req, res, next) => {
   Product.updateOne({ _id: id }, { $set: updateOps })
     .exec()
     .then(result => {
+      const updatedRecord = {
+        _id: id,
+        request: {
+          type: 'PUT',
+          url: `http://localhost:3000/products/${id}`
+        }
+      };
       console.log({ result });
-      res.status(200).json({ result });
+      res.status(200).json({ updatedRecord });
     })
     .catch(err => {
       console.log(err);
@@ -79,8 +123,14 @@ router.delete('/:productId', (req, res, next) => {
   Product.remove({ _id: id })
     .exec()
     .then(docs => {
-      console.log(docs);
-      res.status(200).json(docs);
+      const deletedRecord = {
+        _id: id,
+        request: {
+          type: 'DELETE',
+          remaining: 'http://localhost:3000/products/'
+        }
+      };
+      res.status(200).json(deletedRecord);
     })
     .catch(err => {
       console.log(err);
