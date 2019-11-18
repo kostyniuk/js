@@ -15,7 +15,6 @@ const app = express();
 
 mongoose.connect(`mongodb+srv://kostyniuk:${process.env.MONGO_ATLAS_PW}@cluster0-aowjm.mongodb.net/test?retryWrites=true&w=majority`, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
 });
 
 mongoose.Promise = global.Promise;
