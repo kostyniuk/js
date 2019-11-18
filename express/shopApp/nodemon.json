@@ -1,5 +1,6 @@
 {
   "env": {
-    "MONGO_ATLAS_PW": "Isco222000"
+    "MONGO_ATLAS_PW": "Isco222000",
+    "JWT_KEY": "Kostyniuk15Studge"
   }
 }
