@@ -2,9 +2,12 @@
 
 const express = require('express');
 const router = express.Router();
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
+const checkAuth = require('../middleware/checkAuth');
 
 const User = require('../models/user');
 
@@ -113,7 +116,7 @@ router.post('/login', (req, res, next) => {
     });
 });
 
-router.delete('/:userId', (req, res, next) => {
+router.delete('/:userId', checkAuth, (req, res, next) => {
   const id = req.params.userId;
   User.remove({ _id: id })
     .exec()
