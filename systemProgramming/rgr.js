@@ -476,7 +476,6 @@ const addValues = (arrOfExpr, obj, lexems) => {
   const namesVar = [];
   data.forEach(el => namesVar.push(el[0]));
 
-  console.log({ keys, namesVar });
 
   for (let i = 0; i < keys.length; i++) {
     if (!namesVar.includes(keys[i])) {
@@ -669,14 +668,15 @@ const calculationAsmCodeGen = (str, lexems) => {
   };
 
   const signs = Object.keys(parts);
-  console.log(signs);
+  //console.log(signs);
 
   //console.log(divided[0].after)
   divided.forEach((el, i, arr) => {
     const aft = el.after;
+    const signss = []
     aft.forEach((lexem, j, lexems) => {
       signs.forEach((sign, k, signs) => {
-        if (sign === lexem.token) console.log(lexem);
+        if (sign === lexem.token) signs.push(lexem);
       });
     });
   });
@@ -707,7 +707,7 @@ const calculations = (expression, table, variables) => {
   }
 
   const tokens = getTokens(expressions, expression);
-  console.log(tokens)
+  //console.log(tokens)
   //process.exit(1)
   let lexems = getIndexes(expression, tokens);
   lexems = lexemsSort(lexems);
@@ -876,7 +876,7 @@ const calculations = (expression, table, variables) => {
     }      
   }
 
-  console.log({ table });
+  //console.log({ table });
 
   const shorts = table.filter(obj => obj.type === 'short').map(obj => {
     if (obj.value.includes('.')) {
@@ -885,7 +885,7 @@ const calculations = (expression, table, variables) => {
     }
   })
 
-  console.log({ expressione: expression });
+  //console.log({ expressione: expression });
   
   const floatFinder = /[[0-9]+[.][0-9]+]/g;
   
@@ -904,10 +904,10 @@ const calculations = (expression, table, variables) => {
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
 
-  console.log(splitted);
+  //console.log(splitted);
   const exprs = splitted.map(arr => arr[1]);
 
-  console.log({exprs});
+  //console.log({exprs});
 
 
   const hash = {};
@@ -974,7 +974,7 @@ const arrOfAssign = getOnlyAssignments(lexems);
 const variables = inizializationWithTypes(lexems);
 
 const info = addValues(arrOfAssign, variables, lexems);
-console.log(info)
+//console.log(info)
 const a = () => [...creationStage];
 const b = [...a()];
 const c = { data: b };
