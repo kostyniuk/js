@@ -471,7 +471,7 @@ const addValues = (arrOfExpr, obj, lexems) => {
   const namesVar = [];
   data.forEach(el => namesVar.push(el[0]));
 
-  console.log({keys, namesVar})
+  console.log({ keys, namesVar });
 
   for (let i = 0; i < keys.length; i++) {
     if (!namesVar.includes(keys[i])) {
@@ -702,6 +702,8 @@ const calculations = (expression, table, variables) => {
   }
 
   const tokens = getTokens(expressions, expression);
+  console.log(tokens)
+  //process.exit(1)
   let lexems = getIndexes(expression, tokens);
   lexems = lexemsSort(lexems);
   for (const lexem of lexems) {
@@ -854,25 +856,36 @@ const calculations = (expression, table, variables) => {
   expression = expression.replace(/ /g, '');
   console.log({ new: expression });
 
-  for(let i = 0; i < table.length; i++) {
-    if (expression.includes(table[i].name) && expression[expression.indexOf(table[i].name) + 1] !== '=') {
-      const index = expression.indexOf(table[i].name)
-      expression = expression.replace(table[i].name, table[i].value);
-      console.log({index, variable: table[i].name})
-      i--;
+  console.log(table);
 
-    }
+  for (let i = 0; i < table.length; i++) {
+    if (expression.includes(table[i].name)) {
+      console.log({ta: table[i].name, index: expression.indexOf(table[i].name)})
+      if (expression[expression.indexOf(table[i].name) + 1] !== '=') {
+        expression = expression.replace(table[i].name, table[i].value);
+        i--;
+        continue;
+      }
+      console.log(table[i])
+      if (expression[expression.indexOf(table[i].name) + 1] === '=') {
+        
+        expression = expression.replace(table[i].name, table[i].name.toUpperCase());
+        i--;
+      }
+    }      
   }
 
   console.log({ table });
   console.log({ expression });
+  expression = expression.toLowerCase();
+
 
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
 
-  console.log(splitted)
+  console.log(splitted);
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
@@ -880,7 +893,6 @@ const calculations = (expression, table, variables) => {
 
 
   const results = [];
-  console.log(hash)
   for (const el in hash) {
     try {
       const value = eval(hash[el]);
@@ -891,7 +903,7 @@ const calculations = (expression, table, variables) => {
     }
   }
 
-  console.log({results})
+  console.log(results)
 
   for (let i = 0; i < table.length; i++) {
     for (let j = 0; j < results.length; j++) {
@@ -908,15 +920,26 @@ const calculations = (expression, table, variables) => {
 const actions = process.argv[3];
 
 lexems = setArrayTypes(lexems);
+// let checkShort = lexems.filter(lexem => lexem.Type === 'short');
+// console.log(checkShort);
+// process.exit(1);
+let vars = lexems.filter(lexem => lexem.Type).map(obj => obj.token);
+vars = vars.filter((item, index, arr) => {
+  if (arr.indexOf(item) !== index) {
+    console.log((`ERROR: Variable ${item} has already been declared at index ${str.indexOf(item)}`));
+    process.exit(1);
+  }
+})
+
 const isEndGood = lexems => {
   if (!lexems[lexems.length - 1].token === ';') {
-    console.log("ERROR: Expression should be followed with ';'");
+    console.log('ERROR: Expression should be followed with \';\'');
     process.exit(1);
   }
 };
 isEndGood(lexems);
 if (actions[actions.length - 1] !== ';') {
-  console.log("ERROR: Expression should be followed with ';'");
+  console.log('ERROR: Expression should be followed with \';\'');
   process.exit(1);
 }
 
@@ -927,6 +950,7 @@ const arrOfAssign = getOnlyAssignments(lexems);
 const variables = inizializationWithTypes(lexems);
 
 const info = addValues(arrOfAssign, variables, lexems);
+console.log(info)
 const a = () => [...creationStage];
 const b = [...a()];
 const c = { data: b };
@@ -937,7 +961,7 @@ calculations(actions, info, variables);
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
 
- console.log({ creationStage });
+console.log({ creationStage });
 //eax - 32
 const movHandlerCreation = (obj, i, table) => {
   if (obj.index && obj.index < 8) {
