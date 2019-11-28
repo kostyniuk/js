@@ -73,7 +73,8 @@ const deleteCopies = (arr1, arr2) => {
   return arr1;
 };
 
-const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
+const regex2 = /\W+\d+[a-zA-Z_]+[a-zA-Z0-9_]*/;
+//const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
 const cyrillicPattern = /[\u0400-\u04FF]/;
 const notDetected = [];
 
@@ -215,7 +216,11 @@ const getIndexes = (str, hash) => {
           type = 'ID';
         }
         result.push({ token, index, length, type, name });
+        if (typeof str ===  'string') {
         str = str.replace(token, '.'.repeat(length));
+        } else {
+          str = str.map(el => el.replace(token, '.'.repeat(length)))
+        }
       }
     }
   };
@@ -854,19 +859,15 @@ const calculations = (expression, table, variables) => {
   expression = evalled;
 
   expression = expression.replace(/ /g, '');
-  console.log({ new: expression });
 
-  console.log(table);
 
   for (let i = 0; i < table.length; i++) {
     if (expression.includes(table[i].name)) {
-      console.log({ta: table[i].name, index: expression.indexOf(table[i].name)})
       if (expression[expression.indexOf(table[i].name) + 1] !== '=') {
         expression = expression.replace(table[i].name, table[i].value);
         i--;
         continue;
       }
-      console.log(table[i])
       if (expression[expression.indexOf(table[i].name) + 1] === '=') {
         
         expression = expression.replace(table[i].name, table[i].name.toUpperCase());
@@ -876,9 +877,27 @@ const calculations = (expression, table, variables) => {
   }
 
   console.log({ table });
-  console.log({ expression });
-  expression = expression.toLowerCase();
 
+  const shorts = table.filter(obj => obj.type === 'short').map(obj => {
+    if (obj.value.includes('.')) {
+      console.log(`ERROR: You can't assign float to short variable. Variable ${obj.name}`);
+      process.exit(1);
+    }
+  })
+
+  console.log({ expressione: expression });
+  
+  const floatFinder = /[[0-9]+[.][0-9]+]/g;
+  
+  //const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
+
+  const floatInsBrac = expression.match(floatFinder);
+  if (floatInsBrac) {
+    console.log(`ERROR: Index of array should be integer, find ${floatInsBrac[0]} at index ${actions.indexOf('[')}`)
+    process.exit(1);
+  }
+  expression = expression.toLowerCase();
+  //console.log(expression.split(';').map(el => eval(el)))
 
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
@@ -886,6 +905,11 @@ const calculations = (expression, table, variables) => {
   splitted = splitted.map(el => el.split('='));
 
   console.log(splitted);
+  const exprs = splitted.map(arr => arr[1]);
+
+  console.log({exprs});
+
+
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
@@ -917,7 +941,7 @@ const calculations = (expression, table, variables) => {
   getOutput(table);
 };
 
-const actions = process.argv[3];
+let actions = process.argv[3];
 
 lexems = setArrayTypes(lexems);
 // let checkShort = lexems.filter(lexem => lexem.Type === 'short');
@@ -958,6 +982,9 @@ fs.writeFileSync('help.json', JSON.stringify(c));
 //console.log({creationStage})
 calculations(actions, info, variables);
 
+
+
+
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
 
@@ -991,6 +1018,7 @@ const checking = (lexTable, index) => {
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexem.type !== 'ID') {
       if (lexem.type !== 'type-operator') {
+        console.log(lexem)
         console.log(
           `ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`
         );
