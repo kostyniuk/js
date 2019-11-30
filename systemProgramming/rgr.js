@@ -216,10 +216,10 @@ const getIndexes = (str, hash) => {
           type = 'ID';
         }
         result.push({ token, index, length, type, name });
-        if (typeof str ===  'string') {
-        str = str.replace(token, '.'.repeat(length));
+        if (typeof str === 'string') {
+          str = str.replace(token, '.'.repeat(length));
         } else {
-          str = str.map(el => el.replace(token, '.'.repeat(length)))
+          str = str.map(el => el.replace(token, '.'.repeat(length)));
         }
       }
     }
@@ -476,7 +476,6 @@ const addValues = (arrOfExpr, obj, lexems) => {
   const namesVar = [];
   data.forEach(el => namesVar.push(el[0]));
 
-
   for (let i = 0; i < keys.length; i++) {
     if (!namesVar.includes(keys[i])) {
       //const random10000 = randomIntFromInterval(-10000, 10000);
@@ -673,7 +672,7 @@ const calculationAsmCodeGen = (str, lexems) => {
   //console.log(divided[0].after)
   divided.forEach((el, i, arr) => {
     const aft = el.after;
-    const signss = []
+    const signss = [];
     aft.forEach((lexem, j, lexems) => {
       signs.forEach((sign, k, signs) => {
         if (sign === lexem.token) signs.push(lexem);
@@ -806,12 +805,15 @@ const calculations = (expression, table, variables) => {
   divided.forEach(el => {
     const before = el.before;
     const after = el.after;
+    console.log({ before, after });
     for (let i = 0; i < after.length; i++) {
       if (!after[i].Type.includes(before[0].Type)) {
-        errorLogging(`ERROR: Wrong expression. 
+        if (after[i].Type !== 'short' || before[i].Type !== 'double') {
+          errorLogging(`ERROR: Wrong expression. 
         You can't assign '${after[i].token}' with '${after[i].Type}' type
         to variable '${before[i].token}' with '${before[i].Type}' type.`);
-        process.exit(1);
+          process.exit(1);
+        }
       }
     }
   });
@@ -860,7 +862,6 @@ const calculations = (expression, table, variables) => {
 
   expression = expression.replace(/ /g, '');
 
-
   for (let i = 0; i < table.length; i++) {
     if (expression.includes(table[i].name)) {
       if (expression[expression.indexOf(table[i].name) + 1] !== '=') {
@@ -869,31 +870,41 @@ const calculations = (expression, table, variables) => {
         continue;
       }
       if (expression[expression.indexOf(table[i].name) + 1] === '=') {
-        
-        expression = expression.replace(table[i].name, table[i].name.toUpperCase());
+        expression = expression.replace(
+          table[i].name,
+          table[i].name.toUpperCase()
+        );
         i--;
       }
-    }      
+    }
   }
 
   //console.log({ table });
 
-  const shorts = table.filter(obj => obj.type === 'short').map(obj => {
-    if (obj.value.includes('.')) {
-      console.log(`ERROR: You can't assign float to short variable. Variable ${obj.name}`);
-      process.exit(1);
-    }
-  })
+  const shorts = table
+    .filter(obj => obj.type === 'short')
+    .map(obj => {
+      if (obj.value.includes('.')) {
+        console.log(
+          `ERROR: You can't assign float to short variable. Variable ${obj.name}`
+        );
+        process.exit(1);
+      }
+    });
 
   //console.log({ expressione: expression });
-  
+
   const floatFinder = /[[0-9]+[.][0-9]+]/g;
-  
+
   //const regex2 = /\d+[a-zA-Z_]+[a-zA-Z0-9_]*/; //-
 
   const floatInsBrac = expression.match(floatFinder);
   if (floatInsBrac) {
-    console.log(`ERROR: Index of array should be integer, find ${floatInsBrac[0]} at index ${actions.indexOf('[')}`)
+    console.log(
+      `ERROR: Index of array should be integer, find ${
+        floatInsBrac[0]
+      } at index ${actions.indexOf('[')}`
+    );
     process.exit(1);
   }
   expression = expression.toLowerCase();
@@ -909,12 +920,10 @@ const calculations = (expression, table, variables) => {
 
   //console.log({exprs});
 
-
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
   }
-
 
   const results = [];
   for (const el in hash) {
@@ -922,12 +931,12 @@ const calculations = (expression, table, variables) => {
       const value = eval(hash[el]);
       results.push({ name: el, value });
     } catch (e) {
-      console.log(`ERROR: You haven't define the variable sto assign to ${el}`);
+      console.log(`ERROR: You haven't define the variable to assign to ${el}`);
       process.exit(1);
     }
   }
 
-  console.log(results)
+  console.log(results);
 
   for (let i = 0; i < table.length; i++) {
     for (let j = 0; j < results.length; j++) {
@@ -950,20 +959,24 @@ lexems = setArrayTypes(lexems);
 let vars = lexems.filter(lexem => lexem.Type).map(obj => obj.token);
 vars = vars.filter((item, index, arr) => {
   if (arr.indexOf(item) !== index) {
-    console.log((`ERROR: Variable ${item} has already been declared at index ${str.indexOf(item)}`));
+    console.log(
+      `ERROR: Variable ${item} has already been declared at index ${str.indexOf(
+        item
+      )}`
+    );
     process.exit(1);
   }
-})
+});
 
 const isEndGood = lexems => {
   if (!lexems[lexems.length - 1].token === ';') {
-    console.log('ERROR: Expression should be followed with \';\'');
+    console.log("ERROR: Expression should be followed with ';'");
     process.exit(1);
   }
 };
 isEndGood(lexems);
 if (actions[actions.length - 1] !== ';') {
-  console.log('ERROR: Expression should be followed with \';\'');
+  console.log("ERROR: Expression should be followed with ';'");
   process.exit(1);
 }
 
@@ -982,8 +995,40 @@ fs.writeFileSync('help.json', JSON.stringify(c));
 //console.log({creationStage})
 calculations(actions, info, variables);
 
+/*
+#include <omp.h>
+#include <iostream>
+#include <string>
+using namespace std;
+// double b, a[4];  short n,d; b=2*a[n]; b=d;
+int main()
+{
+  //float a[4] = {300.0, 4.0, 4.0, 12.0 };
 
+  double j = 4;
+  double a11 = 2.3;
+  short d0 = 20;
+  float d = (float)d0;
+  float a1 = (float)a11;
+  float b = (float)j;
+  float param1 = 2;
 
+  __asm {
+    movups xmm0, a1; // поместить 4 переменные с плавающей точкой из a в регистр xmm0
+    movups xmm1, b; // поместить 4 переменные с плавающей точкой из b в регистр xmm1
+    movups xmm2, param1
+    movups xmm3, d;
+    mulss xmm0, xmm2;
+
+    movups b, xmm3; // выгрузить результаты из регистра xmm0 по адресам a
+  };
+
+    cout << b;
+    cout << "Press Enter...";
+    string t;
+    getline(cin, t);
+  }
+*/
 
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
@@ -1018,7 +1063,7 @@ const checking = (lexTable, index) => {
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexem.type !== 'ID') {
       if (lexem.type !== 'type-operator') {
-        console.log(lexem)
+        console.log(lexem);
         console.log(
           `ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`
         );
