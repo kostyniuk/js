@@ -45,3 +45,4 @@ const hexIEE754 = convertBinToHex(binIEE754);
 console.log(hexIEE754);
 const decIEE754 = converter.hexToDec(hexIEE754);
 console.log(decIEE754);
+

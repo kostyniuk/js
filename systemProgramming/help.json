@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"data":[{"name":"a","index":"0","value":"15","type":"double[4]"},{"name":"a","index":"1","value":"3","type":"double[4]"},{"name":"a","index":"3","value":"5","type":"double[4]"},{"name":"n","value":"1","type":"short"},{"name":"d","value":"20","type":"short"},{"name":"b","value":"123","type":"double"}]}
+=======
+{"data":[{"name":"a","index":"0","value":"15","type":"double[4]"},{"name":"a","index":"1","value":"3","type":"double[4]"},{"name":"a","index":"3","value":"5.3","type":"double[4]"},{"name":"k","value":"10","type":"short"},{"name":"n","value":"3","type":"short"},{"name":"c","value":"5","type":"double"},{"name":"d","value":"20","type":"short"},{"name":"b","value":"00000000","type":"double"}]}
+>>>>>>> 209e2230253337f0b71b0ae3fb75c154b51a3b8f
