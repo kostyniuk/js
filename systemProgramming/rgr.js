@@ -602,6 +602,13 @@ const evalContentOfBrackets = exp => {
 };
 
 const calculationAsmCodeGen = (str, lexems) => {
+  lexems = lexems.map((lexem, i, arr) => {
+    if (lexem.value && arr[i+1].token === ']') {
+      lexem.token = lexem.value
+    }
+    return lexem
+  })
+  //console.log(str, lexems)
   const exps = str
     .split(';')
     .filter(el => !!el)
@@ -660,10 +667,10 @@ const calculationAsmCodeGen = (str, lexems) => {
   });
 
   const parts = {
-    '+': [],
-    '-': [],
     '*': [],
-    '/': []
+    '/': [],
+    '+': [],
+    '-': []
   };
 
   const signs = Object.keys(parts);
@@ -674,14 +681,38 @@ const calculationAsmCodeGen = (str, lexems) => {
     const aft = el.after;
     const signss = [];
     aft.forEach((lexem, j, lexems) => {
+      
+      if (lexems[j].token === '[' && lexems[j-1].type === 'ID') {
+        lexems[j-1].token += lexems[j].token + lexems[j+1].token + lexems[j+2].token;
+        //console.log(lexems[j-1])
+        const index = lexems.indexOf(lexems[j]);
+        lexems.splice(index, 3)
+        console.log({lexems})
+      }
+    });
+    aft.forEach((lexem, j, lexems) => {
       signs.forEach((sign, k, signs) => {
-        if (sign === lexem.token) signs.push(lexem);
+        
+        if (sign === lexem.token) {
+          console.log(sign)
+          parts[lexem.token].push([lexems[j-1].token, lexem.token, lexems[j+1].token, i]);
+        }
       });
     });
   });
+  console.log(divided[0])
+
+  const operations = {
+    multiplication: parts['*'],
+    divide: parts['/'],
+    add: parts['+'],
+    substract: parts['-']
+  }
+  console.log(operations)
 };
 
 let expForAssembly;
+
 
 const calculations = (expression, table, variables) => {
   let names = [];
@@ -998,6 +1029,14 @@ fs.writeFileSync('help.json', JSON.stringify(c));
 calculations(actions, info, variables);
 
 console.log(expForAssembly);
+let splitted = expForAssembly.split(';');
+splitted = splitted.map(el => el.trim());
+splitted.pop();
+splitted = splitted.map(el => el.split('='));
+splitted = splitted.map(arr => arr.map(lexem => lexem.trim()))
+splitted = splitted.map(arr => arr.map(expr => expr.split('*')))
+console.log(splitted)
+// here
 
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
@@ -1007,11 +1046,10 @@ creationStage = creationStage.map(obj => {
     ...obj,
     intPart: obj.value.split('.')[0],
     floatPart: obj.value.split('.')[1] || '0'
-  }
-})
+  };
+});
 
-
-console.log({ creationStage });
+//console.log({ creationStage });
 
 const helper = require('./doublepoint');
 const int = 2;
