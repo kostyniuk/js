@@ -1081,9 +1081,13 @@ const operationsModified = Object.values(operations).filter(arr => arr.length).f
 const exprNumber = Math.max(...(operationsModified.map((el, i, arr) => el[el.length-1])))
 const signsAvailable = ['+', '-', '*', '/'] 
 console.log(exprNumber, operationsModified)
+let flatted = operationsModified.flat();
+flatted = Array.from(new Set(flatted))
+console.log(flatted)
+
 for(let i = 0; i < exprNumber; i++) {
-  operationsModified.forEach((expr, i, arr) => {
-    expr.forEach((str, k, exprs) => {
+  //operationsModified.forEach((expr, i, arr) => {
+    flatted.forEach((str, k, exprs) => {
       if (!signsAvailable.includes(str)) {
         if (typeof str !== 'number') {
           if (str.includes('[')) {
@@ -1119,7 +1123,7 @@ for(let i = 0; i < exprNumber; i++) {
         
       })
     
-  })
+  //})
 }
 
 
