@@ -601,10 +601,15 @@ const evalContentOfBrackets = exp => {
   return exp;
 };
 
+let operations;
+let numbers = []
 const calculationAsmCodeGen = (str, lexems) => {
   lexems = lexems.map((lexem, i, arr) => {
     if (lexem.value && arr[i+1].token === ']') {
       lexem.token = lexem.value
+    }
+    if (lexem.name === 'integers' || lexem.name === 'floats') {
+      numbers.push(lexem.token)      
     }
     return lexem
   })
@@ -687,28 +692,27 @@ const calculationAsmCodeGen = (str, lexems) => {
         //console.log(lexems[j-1])
         const index = lexems.indexOf(lexems[j]);
         lexems.splice(index, 3)
-        console.log({lexems})
+        //console.log({lexems})
       }
     });
     aft.forEach((lexem, j, lexems) => {
       signs.forEach((sign, k, signs) => {
         
         if (sign === lexem.token) {
-          console.log(sign)
+          //console.log(sign)
           parts[lexem.token].push([lexems[j-1].token, lexem.token, lexems[j+1].token, i]);
         }
       });
     });
   });
-  console.log(divided[0])
+  //console.log(divided[0])
 
-  const operations = {
+  operations = {
     multiplication: parts['*'],
     divide: parts['/'],
     add: parts['+'],
     substract: parts['-']
   }
-  console.log(operations)
 };
 
 let expForAssembly;
@@ -1035,12 +1039,20 @@ splitted.pop();
 splitted = splitted.map(el => el.split('='));
 splitted = splitted.map(arr => arr.map(lexem => lexem.trim()))
 splitted = splitted.map(arr => arr.map(expr => expr.split('*')))
-console.log(splitted)
+//console.log(splitted)
 // here
+numbers = numbers.map((number, i, arr) => {
+  const name = 'CONSTANT_' + ++i
+  return {[name]: number}
+})
 
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
 creationStage = creationStage.filter(obj => obj.value !== '1003');
+//console.log(creationStage)
+numbers.forEach((obj, i, arr) => {
+  creationStage.push({name: Object.keys(obj)[0], value: Object.values(obj)[0]})
+})
 creationStage = creationStage.map(obj => {
   return {
     ...obj,
@@ -1049,7 +1061,7 @@ creationStage = creationStage.map(obj => {
   };
 });
 
-//console.log({ creationStage });
+console.log({ creationStage });
 
 const helper = require('./doublepoint');
 const int = 2;
@@ -1063,6 +1075,54 @@ const makeIEE754Hex = (int, float) => {
 };
 
 //eax - 32
+console.log()
+let counter = 0;
+const operationsModified = Object.values(operations).filter(arr => arr.length).flat()
+const exprNumber = Math.max(...(operationsModified.map((el, i, arr) => el[el.length-1])))
+const signsAvailable = ['+', '-', '*', '/'] 
+console.log(exprNumber, operationsModified)
+for(let i = 0; i < exprNumber; i++) {
+  operationsModified.forEach((expr, i, arr) => {
+    expr.forEach((str, k, exprs) => {
+      if (!signsAvailable.includes(str)) {
+        if (typeof str !== 'number') {
+          if (str.includes('[')) {
+            //movups xmm3, [4 * esi] + a
+            const arrName = str.slice(0, str.indexOf('['))
+            const arrIndex = str.slice(str.indexOf('[')+1, str.indexOf(']'))
+            // console.log('array', str, arrName, arrIndex)
+            console.log('mov esi, ', arrIndex)
+            console.log('movups xmm' + counter + ' ' + '[4 * esi] + ', arrName);
+            counter++;
+          } 
+          else if (parseFloat(str)) {
+            //console.log('Constant', str)
+            let varName;
+            creationStage.forEach((varObj, index, ar) => {
+              if (varObj.value === str) {
+                varName = varObj.name;
+              }
+            })
+
+            console.log('movups xmm' + counter + ' ' + varName);
+            counter++
+
+
+          } else {
+            //console.log('variable', str)
+            
+            console.log('movups xmm' + counter + ' ' + str);
+            counter++;
+          }
+        }
+      }
+        
+      })
+    
+  })
+}
+
+
 const movHandlerCreation = (obj, i, table) => {
   // ; a[0] : = 1
   //     mov eax, 1075303564
@@ -1081,12 +1141,14 @@ const movHandlerCreation = (obj, i, table) => {
   `;
 };
 
+//movupsHandlerCreation
+
 const output = creationStage.map((obj, i, arr) =>
   movHandlerCreation(obj, i, arr)
 );
-console.log(output.join(''));
+//console.log(output.join(''));
 
-console.log(makeIEE754Hex(3, 3));
+//console.log(makeIEE754Hex(2, 0));
 
 // #include <iostream>
 // #include <string>
