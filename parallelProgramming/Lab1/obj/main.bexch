@@ -1,18 +1,18 @@
 [GENERATED OBJECT FILE]
 b__main.o
 [PROJECT FILES]
-D:\js\parallelProgramming\testlab1.gpr
+D:\js\parallelProgramming\Lab1\testlab1.gpr
 20190928075348
 [BOUND OBJECT FILES]
-D:\js\parallelProgramming\obj\data.o
-D:\js\parallelProgramming\obj\main.o
+D:\js\parallelProgramming\Lab1\obj\data.o
+D:\js\parallelProgramming\Lab1\obj\main.o
 [GENERATED SOURCE FILES]
 b__main.ads
 b__main.adb
 b__main.ali
 [RESULTING OPTIONS]
--LD:\js\parallelProgramming\obj\
--LD:\js\parallelProgramming\obj\
+-LD:\js\parallelProgramming\Lab1\obj\
+-LD:\js\parallelProgramming\Lab1\obj\
 -LC:/gnat/2019/lib/gcc/x86_64-pc-mingw32/8.3.1/adalib/
 -static
 -static-libgcc

@@ -307,10 +307,10 @@ package body ada_main is
    end;
 
 --  BEGIN Object file/option list
-   --   D:\js\parallelProgramming\obj\data.o
-   --   D:\js\parallelProgramming\obj\main.o
-   --   -LD:\js\parallelProgramming\obj\
-   --   -LD:\js\parallelProgramming\obj\
+   --   D:\js\parallelProgramming\Lab1\obj\data.o
+   --   D:\js\parallelProgramming\Lab1\obj\main.o
+   --   -LD:\js\parallelProgramming\Lab1\obj\
+   --   -LD:\js\parallelProgramming\Lab1\obj\
    --   -LC:/gnat/2019/lib/gcc/x86_64-pc-mingw32/8.3.1/adalib/
    --   -static
    --   -lgnarl

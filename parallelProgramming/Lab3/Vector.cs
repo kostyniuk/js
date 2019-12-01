@@ -18,7 +18,9 @@ namespace CsharpThreads
                 Random rnd = new Random();
                 for (int i = 0; i < this.n; i++)
                 {
-                    this.data[i] = rnd.Next(10);
+                    //this.data[i] = rnd.Next(10);
+                    this.data[i] = 1;
+
                 }
             }
         }
@@ -64,6 +66,9 @@ namespace CsharpThreads
                     Console.Write(data[i] + ", ");
                 }
                 Console.Write(data[n - 1] + "]" + "\n") ;
+            } else
+            {
+                Console.WriteLine("Output is to cumbersome!");
             }
         }
     }

@@ -36,47 +36,6 @@ for (const operators in tokens.keyword['type-operator']) {
 }
 
 typesAll = Object.keys(tokenTypes);
-const typesTokenNames = Object.values(tokenTypes);
-
-
-const getSymbols = (str, arrOfSymbols) => {
-  const symbolsUsed = [];
-  const arr = str.split(' ');
-  for (let i = 0; i < arrOfSymbols.length; i++) {
-    for (let j = 0; j < arr.length; j++) {
-      const temp = arr[j].split(arrOfSymbols[i]);
-      if (temp.length > 1) symbolsUsed.push(arrOfSymbols[i]);
-    }
-  }
-  return symbolsUsed;
-  //return Array.from(new Set(symbolsUsed));
-};
-
-const fix = (symbols, expression) => {
-  const singles = symbols.filter(el => el.length < 2);
-  const multiples = symbols.filter(el => el.length > 1);
-  const i = 0;
-
-  const allentries = (arr, index, expression) => {
-    const current = arr[index];
-    const indexExp = expression.indexOf(current);
-    if (index === arr.length) return;
-    if (expression[indexExp] !== expression[indexExp + 1]) {
-      if (indexExp !== -1) multiples.push(current);
-      index += 1;
-      allentries(arr, index, expression);
-    } else {
-      const start = expression.substring(0, indexExp);
-      const end = expression.substring(indexExp + 2);
-      console.log(current);
-      expression = start.concat(end);
-      console.log(expression);
-      allentries(arr, index, expression);
-    }
-  };
-  allentries(singles, i, expression);
-  return multiples;
-};
 
 const eliminateFloatsFromInts = (arrFl, arrInt) => {
 
@@ -245,6 +204,12 @@ const getIndexes = (str, hash) => {
   return result;
 };
 
+const errorLogging = (issue) => {
+  console.log(issue);
+  process.exit(1);
+  return;
+};
+
 const isOpenBracketBefore = (lexemTable, index) => {
   let lBr = 0;
   let rBr = 0;
@@ -256,8 +221,6 @@ const isOpenBracketBefore = (lexemTable, index) => {
     if (lexemTable[i].name === 'T_LEFT_PARENTHESIS') lPr++;
     if (lexemTable[i].name === 'T_RIGHT_PARENTHESIS') rPr++;
   }
-  const leftBrIsOpen = (lBr - rBr > 0);
-  const leftPrIsOpen = (lPr - rPr > 0);
 
   return [lBr - rBr, lPr - rPr];
 };
@@ -277,11 +240,12 @@ lexems = lexemsSort(lexems);
 
 const unresolved = isUnresolved(lexems, original);
 if (unresolved[0]) {
-  console.log(`ERROR: Found unresolved symbol. \nSymbol '${unresolved[0]}' at ${unresolved[1]} index`);
+  errorLogging(`ERROR: Found unresolved symbol. 
+  Symbol '${unresolved[0]}' at ${unresolved[1]} index`);
   process.exit(1);
 }
 
-const getAssignments = (lexTable, types) => {
+const getAssignments = lexTable => {
 
   const lexemsAll = lexTable;
   let semicolonBef = 0;
@@ -297,9 +261,9 @@ const getAssignments = (lexTable, types) => {
 
           for (let j = i; j > 0; j--) {
             if (lexTable[j].name === 'T_SEMICOLON') {
-              semicolonBef = lexTable[j].index;
+              semicolonBef = lexTable[j].index + 1;
               break;
-            }
+            } else semicolonBef = 0;
           }
           for (let j = i; j < lexems.length; j++) {
             if (lexTable[j].name === 'T_SEMICOLON') {
@@ -312,10 +276,10 @@ const getAssignments = (lexTable, types) => {
       }
     }
   });
-  return indexesOfAssign;
+  return [...new Set(indexesOfAssign)];
 };
 
-const assignRanges = getAssignments(lexems, typesTokenNames);
+const assignRanges = getAssignments(lexems);
 
 const setTypes = (assignRanges, lexems) => {
   const divorcedExp = [];
@@ -325,11 +289,9 @@ const setTypes = (assignRanges, lexems) => {
     divorcedExp[i] = [];
     for (const lexem of lexems) {
       if (i === 0 && lexem === lexems[0]) { divorcedExp[i].push(lexems[0]); }
-      if (lexem.index < end && lexem.index > start) divorcedExp[i].push(lexem);
+      if (lexem.index < end && lexem.index >= start) divorcedExp[i].push(lexem);
     }
   }
-
-  //console.log(divorcedExp)
   divorcedExp.map((arr) => {
     arr.map((lexem, indexP, parent) => {
       if (lexem.name === 'ids') {
@@ -343,14 +305,12 @@ const setTypes = (assignRanges, lexems) => {
   return [lexems, divorcedExp];
 };
 
-const inizializationTokens = setTypes(assignRanges, lexems)[1];
 lexems = setTypes(assignRanges, lexems)[0];
 
 const bracket = isOpenBracketBefore(lexems, lexems.length);
 bracket.forEach((el) => {
   if (el !== 0) {
-    console.log('ERROR: Quantity of brackets doesnt match');
-    process.exit(1);
+    errorLogging('ERROR: Quantity of brackets doesnt match');
   }
 });
 
@@ -363,16 +323,12 @@ const setArrayTypes = lexems => {
           original[i - 3].Type += `[${table[i - 1].token}]`;
         }
       } else {
-        console.log('error with your array assignment', lexem.name, lexem.index);
-        process.exit(1);
+        errorLogging('ERROR: Array assignment at index', lexem.index + '');
       }
     }
   });
   return original;
-
 };
-
-
 
 const getOnlyAssignments = lexems => {
   const assignments = [];
@@ -380,7 +336,6 @@ const getOnlyAssignments = lexems => {
   const indexesBeforeFirst = [];
   lexems.forEach((lexem, i, table) => {
     if (lexem.token === ';') {
-      //console.log(lexem)
       if (table[i - 1].name === 'integers' || table[i - 1].name === 'floats') {
         indexes.push((lexem.index));
 
@@ -388,8 +343,9 @@ const getOnlyAssignments = lexems => {
       }
     }
   });
-  lexems.forEach((lexem, i, arr) => {
-    if (lexem.token === ';' && lexem.index < indexes[0]) indexesBeforeFirst.push(lexem.index);
+  lexems.forEach(lexem => {
+    if (lexem.token === ';' &&
+    lexem.index < indexes[0]) indexesBeforeFirst.push(lexem.index);
   });
   indexes = [indexesBeforeFirst[indexesBeforeFirst.length - 1], ...indexes];
   for (let i = 0; i < indexes.length - 1; i++) {
@@ -397,7 +353,8 @@ const getOnlyAssignments = lexems => {
     const end = indexes[i + 1];
     assignments[i] = [];
     for (let j = 0; j < lexems.length; j++) {
-      if (lexems[j].index > start && lexems[j].index < end) assignments[i].push(lexems[j]);
+      if (lexems[j].index > start &&
+        lexems[j].index < end) assignments[i].push(lexems[j]);
     }
   }
   return assignments;
@@ -411,8 +368,7 @@ const inizializationWithTypes = (lexems) => {
       const typeName = type.replace(/[^A-Za-z]/g, '');
       const keywords = Object.keys(tokenss.keyword['type-operator']);
       if (!keywords.includes(typeName)) {
-        console.log(`ERROR: Wrong type: ${type}`);
-        process.exit(1);
+        errorLogging(`ERROR: Wrong type: ${type} at ${lexem.index} index.`);
       }
       variables[lexem.token] = { type };
     }
@@ -470,27 +426,36 @@ const sortArrOfObjByField = (arr, field) => {
     const keyA = a[field];
     const keyB = b[field];
     // Compare the 2 dates
-    if(keyA < keyB) return -1;
-    if(keyA > keyB) return 1;
+    if (keyA < keyB) return -1;
+    if (keyA > keyB) return 1;
     return 0;
-});
+  });
   return [...withField, ...arr];
 };
 
-const randomIntFromInterval = (min, max) => { // min and max included 
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
+const randomIntFromInterval = (min, max) =>  // min and max included
+  Math.floor(Math.random() * (max - min + 1) + min)
+;
 
 const addValues = (arrOfExpr, obj, lexems) => {
-  //console.log(arrOfExpr);
+  const keys = Object.keys(obj);
   const data = [];
-  arrOfExpr.forEach((expression, i, arr) => {
+  arrOfExpr.forEach((expression, i) => {
     data[i] = [];
-    expression.forEach((lexem, j, parent) => {
+    expression.forEach(lexem => {
       data[i].push(lexem.token);
     });
   });
-  //console.log({ data });
+  const namesVar = [];
+  data.forEach(el => namesVar.push(el[0]));
+
+
+  for (let i = 0; i < keys.length; i++) {
+    if (!namesVar.includes(keys[i])) {
+      const random10000 = randomIntFromInterval(-10000, 10000);
+      data.push([keys[i].toString(), '=', random10000 + '' ]);
+    }
+  }
   let arrOfVar = separationOfNamesAndValues(data);
   for (let i = 0; i < lexems.length; i++) {
     for (let j = 0; j < arrOfVar.length; j++) {
@@ -499,8 +464,9 @@ const addValues = (arrOfExpr, obj, lexems) => {
           if (lexems[i].Type[lexems[i].Type.length - 1] === ']') {
             const num = lexems[i].Type.match(/\d+/)[0];
             if (num - 1 < arrOfVar[j].index) {
-              console.log(`ERROR: Index out of range: ${arrOfVar[j].name}[${arrOfVar[j].index}]`);
-              process.exit(1);
+              const variable = arrOfVar[j].name;
+              const index = arrOfVar[j].index;
+              errorLogging(`ERROR: Index out of range: ${variable}[${index}]`);
             }
           }
           arrOfVar[j].type = lexems[i].Type;
@@ -509,24 +475,26 @@ const addValues = (arrOfExpr, obj, lexems) => {
     }
   }
 
-  const current = 0;
   let max = 0;
   const indexes = [];
   let indexesAll = [];
   const res = [];
   arrOfVar = arrOfVar.map((record, i, table) => {
+    if (!record.type) {
+      errorLogging(`ERROR: 
+      Unresolved value: ${record.name} at ${record.index} index.`);
+    }
     if (record.index) {
       max = record.type.match(/\d+/)[0];
       indexes.push(parseInt(record.index));
       if (!table[i + 1].index) {
         indexesAll = getArrThatLessThanInt(max);
-        //console.log(indexes, indexesAll);
         res.push(record);
         for (let j = 0; j < indexesAll.length; j++) {
           if (!indexes.includes(indexesAll[j])) {
-            //console.log(indexesAll[j]);
-            //res.push(record)
-            res.push({ name: record.name, index: indexesAll[j].toString(), value: randomIntFromInterval(-1000, 1000), type: record.type });
+            const random10000 = randomIntFromInterval(-10000, 10000);
+            res.push({ name: record.name, index: indexesAll[j].toString(),
+              value: random10000 + '', type: record.type });
           }
         }
         record = '';
@@ -537,40 +505,24 @@ const addValues = (arrOfExpr, obj, lexems) => {
 
     return record;
   });
-  let results = res;
   const final = sortArrOfObjByField(res, 'index');
-  //console.log(results)
   return final;
-};
-
-const isOneArrIncludesAntother = (arr1, arr2) => {
-  for (let i = 0; i < arr1.length; i++) {
-    let includes = false;
-    for (let j = 0; j < arr2.length; j++) {
-      if (arr1[i] === arr2[j]) includes = true;
-    }
-    if (!includes)
-      console.log(`You haven't created the variable, ${arr1[i]}`);
-    process.exit(1);
-    //return false;
-  }
-  //return true;
 };
 
 const getOutput = table => {
   for (const variable of table) {
+    const { name, type, value } = variable;
     if (variable.type === 'double') {
-      const output = `'${variable.name}': ${variable.type} {${variable.value}.0}`;
+      const output = `'${name}': ${type} {${value}.0}`;
       console.log(output);
     } else {
-      const output = `'${variable.name}': ${variable.type} {${variable.value}}`;
+      const output = `'${name}': ${type} {${value}}`;
       console.log(output);
     }
   }
 };
 
 const makeArr = table => {
-  const original = table;
   let arr = [];
   let name;
   let type = '';
@@ -611,18 +563,15 @@ const evalContentOfBrackets = exp => {
     end = str.indexOf(']');
     if (start === -1) flag = false;
   }
-  let strRes;
   for (let i = 0; i < results.length; i++) {
     const beginning = exp.slice(0, results[i].from + 1);
     const last = exp.slice(results[i].to);
     exp = `${beginning}${eval(results[i].expression)}${last}`;
-    //console.log({beginning, last});
   }
-  //console.log({str})
   return exp;
 };
 
-const calculations = (expression, table) => {
+const calculations = (expression, table, variables) => {
   let names = [];
   for (const obj of table) {
     names.push(obj.name);
@@ -633,12 +582,10 @@ const calculations = (expression, table) => {
   expressions = expressions.map(el => el.trim());
   const ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
   const idsFlatted = Array.from(new Set(ids.flat()));
-  console.log({ expression });
   for (let i = 0; i < idsFlatted.length; i++) {
     let includes = false;
     for (let j = 0; j < names.length; j++) {
       if (idsFlatted[i] === names[j]) includes = true;
-      //console.log(includes)
     }
     if (!includes) {
       console.log(`You haven't created the variable, ${idsFlatted[i]}`);
@@ -646,26 +593,125 @@ const calculations = (expression, table) => {
     }
   }
 
-  //isOneArrIncludesAntother(names, idsFlatted);
   const tokens = getTokens(expressions, expression);
   let lexems = getIndexes(expression, tokens);
   lexems = lexemsSort(lexems);
   for (const lexem of lexems) {
     for (const variable of table) {
-      if (lexem.token === variable.name && !variable.index) { lexem.value = variable.value; }
+      if (lexem.token === variable.name && !variable.index) {
+        lexem.value = variable.value;
+      }
     }
   }
+
+  lexems = lexems.filter(lex => lex.index !== -1);
+  const idLexems = lexems.filter(lexem => {
+    if (lexem.name === 'ids' || lexem.token === '=' || lexem.token === ';' ||
+     lexem.token === '[' || lexem.token === ']') return lexem;
+  });
+
+  let scIndexes = [0];
+  const expsArr = [];
+
+  idLexems.forEach(el => {
+    if (el.token === ';') {
+      scIndexes.push(el.index);
+    }
+  });
+
+  scIndexes = scIndexes.map((el, i, arr) => {
+    if (i !== 0) {
+      return [arr[i - 1], arr[i]];
+    }
+  }).filter(el => !!el);
+
+  for (let i = 0; i < scIndexes.length; i++) {
+    expsArr[i] = [];
+  }
+
+  idLexems.forEach(el => {
+    for (let i = 0; i < scIndexes.length; i++) {
+      if (el.index >= scIndexes[i][0] && el.index <= scIndexes[i][1]) {
+        expsArr[i].push(el);
+      }
+    }
+  });
+
+  let divided = expsArr;
+  divided = divided.map(() => ({ before: [], after: [] }));
+
+  expsArr.forEach((arr, i) => {
+    arr.forEach((lex, j, arrOfExp) => {
+      if (lex.token === '=') {
+        for (let k = 0; k < arrOfExp.length; k++) {
+          if (k < j) {
+            divided[i].before.push(arrOfExp[k]);
+          } else {
+            divided[i].after.push(arrOfExp[k]);
+          }
+        }
+      }
+    });
+  });
+
+  divided = divided.map(obj => {
+    obj.after = obj.after.map((lex, i, arr) => {
+      if (lex.name === 'ids' && arr[i - 1].token !== '[') return lex;
+    });
+    obj.after = obj.after.filter(el => !!el);
+    obj.before = obj.before.map(lex => {
+      if (lex.name === 'ids') return lex;
+    });
+    obj.before = obj.before.filter(el => !!el);
+
+    return obj;
+
+  });
+
+  divided = divided.map(obj => {
+    obj.before.map(lexem => {
+      lexem.Type = variables[lexem.token].type;
+      return lexem;
+    });
+    obj.after.map(lexem => {
+      lexem.Type = variables[lexem.token].type;
+      return lexem;
+    });
+    return obj;
+  });
+
+  divided.forEach(el => {
+    const before = el.before;
+    const after = el.after;
+    for (let i = 0; i < after.length; i++) {
+      if (!after[i].Type.includes(before[0].Type)) {
+        errorLogging(`ERROR: Wrong expression. 
+        You can't assign '${after[i].token}' with '${after[i].Type}' type
+        to variable '${before[i].token}' with '${before[i].Type}' type.`);
+        process.exit(1);
+      }
+    }
+  });
+
+  console.log(table);
   for (let i = 0; i < idsFlatted.length; i++) {
     for (let j = 0; j < lexems.length; j++) {
-      if (idsFlatted[i] === lexems[j].token && lexems[j].value && lexems[j + 1].token !== '=') {
-        for (const el of table) {
-          if (el.name === idsFlatted[i]) {
-            expression = expression.replace(lexems[j].token, el.value);
+      if (idsFlatted[i] === lexems[j].token && lexems[j].value) {
+        if (lexems[j + 1].token !== '=') {
+          for (const el of table) {
+            if (el.name === idsFlatted[i]) {
+              if (lexems[j + 1].token !== '=') {
+                //const index = expression.lastIndexOf(lexems[j].token);
+                expression = expression.replace(lexems[j].token, el.value);
+              }
+            }
           }
         }
       }
     }
   }
+
+  console.log(expression, idsFlatted);
 
   for (const obj of table) {
     if (obj.index) {
@@ -681,43 +727,44 @@ const calculations = (expression, table) => {
       i--;
     }
   }
-  //console.log({ expression });
+
+  console.log({ expression });
   const evalled = evalContentOfBrackets(expression);
   expression = evalled;
 
-
-
+  expression = expression.replace(/ /g, '');
+  console.log({ new: expression });
   for (const variable of table) {
-    if (expression.includes(variable.name) && expression[expression.indexOf(variable.name) + 1] !== '=') {
+    if (expression.includes(variable.name) &&
+    expression[expression.indexOf(variable.name) + 1] !== '=') {
       expression = expression.replace(variable.name, variable.value);
     }
   }
-  //console.log({ table });
-  //console.log({ expression });
+
+  console.log({ table });
+  console.log({ expression });
 
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
   splitted.pop();
   splitted = splitted.map(el => el.split('='));
-  console.log(splitted);
+
   const hash = {};
   for (let i = 0; i < splitted.length; i++) {
     hash[splitted[i][0]] = splitted[i][1];
   }
-  //console.log({ hash });
+
   const results = [];
-  //console.log(hash);
   for (const el in hash) {
     try {
       const value = eval(hash[el]);
       results.push({ 'name': el, value });
     } catch (e) {
-      console.log(`ERROR: You haven't define the variable(s) to assign to ${el}`);
+      console.log(`ERROR: You haven't define the variable sto assign to ${el}`);
       process.exit(1);
     }
   }
-  //console.log(results);
-  //console.log(table);
+
   for (let i = 0; i < table.length; i++) {
     for (let j = 0; j < results.length; j++) {
       if (table[i].name === results[j].name) {
@@ -727,24 +774,29 @@ const calculations = (expression, table) => {
   }
   table = makeArr(table);
   getOutput(table);
-
 };
 
+const actions = process.argv[3];
+
 lexems  = setArrayTypes(lexems);
-//console.log(lexems);
+const isEndGood = lexems => {
+  if (!lexems[lexems.length - 1].token === ';') {
+    console.log('ERROR: Expression should be followed with \';\'');
+    process.exit(1);
+  }
+};
+isEndGood(lexems);
+if (actions[actions.length - 1] !== ';') {
+  console.log('ERROR: Expression should be followed with \';\'');
+  process.exit(1);
+}
 const arrOfAssign = getOnlyAssignments(lexems);
-//console.log(arrOfAssign);
-//process.exit(0)
 const variables = inizializationWithTypes(lexems);
-//console.log(variables)
 const info = addValues(arrOfAssign, variables, lexems);
-//console.log(info);
-calculations(process.argv[3], info);
-//console.log(lexems);
+calculations(actions, info, variables);
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
-    //console.log('Syntax is correct');
     process.exit(0);
   }
   const lexem = lexTable[index];
@@ -912,3 +964,4 @@ const checking = (lexTable, index) => {
 };
 
 checking(lexems, 0);
+checking(actions, 0);

@@ -9,7 +9,7 @@ namespace CsharpThreads
 { 
     class Program
     {
-        const int N = 5;
+        const int N = 3;
         public static int counter = 0;
         public static Matrix MS1;
         public static Vector S1;
@@ -33,6 +33,21 @@ namespace CsharpThreads
             t3.Start();
             t4.Start();
 
+            t1.Join();
+            t2.Join();
+            t3.Join();
+            t4.Join();
+
+            Console.WriteLine();
+            Console.WriteLine("---Results---");
+            Console.WriteLine();
+
+            Console.Write("F1 = ");
+            C.Print();
+            Console.WriteLine("F2 = ");
+            MF.Print();
+            Console.Write("F3 = " + (MS1 * S1).Max());
+
         }
 
         static void F1()
@@ -52,8 +67,6 @@ namespace CsharpThreads
             
             Console.WriteLine("Thread T1 finished!");
             
-            logging();
-            
         }
 
         static void F2()
@@ -67,12 +80,10 @@ namespace CsharpThreads
 
             Thread.Sleep(500);
 
-            MF = (Matrix)((MG * MH) * (MK + ML));
+            MF = ((MG * MH) * (MK + ML));
 
             Console.WriteLine("Thread T2 finished!");
             
-            logging();
-
         }
 
         static void F3()
@@ -88,8 +99,6 @@ namespace CsharpThreads
             
             Console.WriteLine("Thread T3 finished!");
             
-            logging();
-
         }
 
         static void F4()
@@ -105,23 +114,7 @@ namespace CsharpThreads
             
             Console.WriteLine("Thread T4 finished!");
             
-            logging();
-
         }
 
-        static public void logging () {
-            counter++;
-            if(counter == 4) {
-            Console.WriteLine();
-            Console.WriteLine("---Results---");
-            Console.WriteLine();
-
-            Console.Write("F1 = ");
-            C.Print();
-            Console.WriteLine("F2 = ");
-            MF.Print();
-            Console.Write("F3 = " + (MS1 * S1).Max());
-            }
-        } 
     }
 }
