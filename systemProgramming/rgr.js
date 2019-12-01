@@ -479,7 +479,7 @@ const addValues = (arrOfExpr, obj, lexems) => {
   for (let i = 0; i < keys.length; i++) {
     if (!namesVar.includes(keys[i])) {
       //const random10000 = randomIntFromInterval(-10000, 10000);
-      data.push([keys[i].toString(), '=', '00000000' + '']);
+      data.push([keys[i].toString(), '=', '1003' + '']);
     }
   }
   let arrOfVar = separationOfNamesAndValues(data);
@@ -1001,28 +1001,17 @@ console.log(expForAssembly);
 
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
+creationStage = creationStage.filter(obj => obj.value !== '1003');
+creationStage = creationStage.map(obj => {
+  return {
+    ...obj,
+    intPart: obj.value.split('.')[0],
+    floatPart: obj.value.split('.')[1] || '0'
+  }
+})
+
 
 console.log({ creationStage });
-//eax - 32
-const movHandlerCreation = (obj, i, table) => {
-  if (obj.index && obj.index < 8) {
-    return `
-  ; ${obj.name}[${obj.index}] = ${obj.value}
-  mov eax, ${obj.value}
-  mov dword ptr[a+${obj.index * 4}], eax
-  `;
-  }
-  return `
-  ; ${obj.name} = ${obj.value}
-  mov eax, ${obj.value}
-  mov ${obj.name}, aex
-  `;
-};
-
-const output = creationStage.map((obj, i, arr) =>
-  movHandlerCreation(obj, i, arr)
-);
-console.log(output.join(''));
 
 const helper = require('./doublepoint');
 const int = 2;
@@ -1032,8 +1021,32 @@ const makeIEE754Hex = (int, float) => {
   const iee754 = helper.makeIEE754(int, float);
   const hexIee754 = helper.binToHex(iee754);
   const decIee754 = helper.hexToDec(hexIee754);
-  return decIee754
+  return decIee754;
 };
+
+//eax - 32
+const movHandlerCreation = (obj, i, table) => {
+  // ; a[0] : = 1
+  //     mov eax, 1075303564
+  //     mov dword ptr[a + 0], eax
+  if (obj.index) {
+    return `
+  ; ${obj.name}[${obj.index}] = ${obj.value}
+  mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
+  mov dword ptr[a+${obj.index * 4}], eax
+  `;
+  }
+  return `
+  ; ${obj.name} = ${obj.value}
+  mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
+  mov ${obj.name}, aex
+  `;
+};
+
+const output = creationStage.map((obj, i, arr) =>
+  movHandlerCreation(obj, i, arr)
+);
+console.log(output.join(''));
 
 console.log(makeIEE754Hex(3, 3));
 
