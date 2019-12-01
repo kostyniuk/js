@@ -681,6 +681,8 @@ const calculationAsmCodeGen = (str, lexems) => {
   });
 };
 
+let expForAssembly;
+
 const calculations = (expression, table, variables) => {
   let names = [];
   for (const obj of table) {
@@ -805,7 +807,6 @@ const calculations = (expression, table, variables) => {
   divided.forEach(el => {
     const before = el.before;
     const after = el.after;
-    console.log({ before, after });
     for (let i = 0; i < after.length; i++) {
       if (!after[i].Type.includes(before[0].Type)) {
         if (after[i].Type !== 'short' || before[i].Type !== 'double') {
@@ -856,7 +857,8 @@ const calculations = (expression, table, variables) => {
     }
   }
 
-  //console.log({ expression });
+  expForAssembly = expression;
+
   const evalled = evalContentOfBrackets(expression);
   expression = evalled;
 
@@ -908,7 +910,7 @@ const calculations = (expression, table, variables) => {
     process.exit(1);
   }
   expression = expression.toLowerCase();
-  //console.log(expression.split(';').map(el => eval(el)))
+  //console.log(expression);
 
   let splitted = expression.split(';');
   splitted = splitted.map(el => el.trim());
@@ -950,7 +952,7 @@ const calculations = (expression, table, variables) => {
   getOutput(table);
 };
 
-let actions = process.argv[3];
+const actions = process.argv[3];
 
 lexems = setArrayTypes(lexems);
 // let checkShort = lexems.filter(lexem => lexem.Type === 'short');
@@ -995,40 +997,7 @@ fs.writeFileSync('help.json', JSON.stringify(c));
 //console.log({creationStage})
 calculations(actions, info, variables);
 
-/*
-#include <omp.h>
-#include <iostream>
-#include <string>
-using namespace std;
-// double b, a[4];  short n,d; b=2*a[n]; b=d;
-int main()
-{
-  //float a[4] = {300.0, 4.0, 4.0, 12.0 };
-
-  double j = 4;
-  double a11 = 2.3;
-  short d0 = 20;
-  float d = (float)d0;
-  float a1 = (float)a11;
-  float b = (float)j;
-  float param1 = 2;
-
-  __asm {
-    movups xmm0, a1; // поместить 4 переменные с плавающей точкой из a в регистр xmm0
-    movups xmm1, b; // поместить 4 переменные с плавающей точкой из b в регистр xmm1
-    movups xmm2, param1
-    movups xmm3, d;
-    mulss xmm0, xmm2;
-
-    movups b, xmm3; // выгрузить результаты из регистра xmm0 по адресам a
-  };
-
-    cout << b;
-    cout << "Press Enter...";
-    string t;
-    getline(cin, t);
-  }
-*/
+console.log(expForAssembly);
 
 // rgr
 creationStage = JSON.parse(fs.readFileSync('help.json', 'utf-8')).data;
@@ -1053,7 +1022,86 @@ const movHandlerCreation = (obj, i, table) => {
 const output = creationStage.map((obj, i, arr) =>
   movHandlerCreation(obj, i, arr)
 );
-//console.log(output.join(''));
+console.log(output.join(''));
+
+const helper = require('./doublepoint');
+const int = 2;
+const float = 3;
+
+const makeIEE754Hex = (int, float) => {
+  const iee754 = helper.makeIEE754(int, float);
+  const hexIee754 = helper.binToHex(iee754);
+  const decIee754 = helper.hexToDec(hexIee754);
+  return decIee754
+};
+
+console.log(makeIEE754Hex(3, 3));
+
+// #include <iostream>
+// #include <string>
+// using namespace std;
+// double b, a[4];  short n,d; b=2*a[n]; b=d;
+// int main()
+// {
+
+//   double b00 = 4;
+//   double a11 = 4.2;
+//   short d00 = 20;
+
+//   float b0 = (float)b00;
+//   float a10 = (float)a11;
+//   float d0 = (float)d00;
+
+//   float a[4];
+
+//   float d;
+//   float a1;
+//   float b;
+//   float param1 = 2;
+
+//   __asm {
+//     // probable need to assign variables here
+//     ; a[0] : = 1
+//     mov eax, 1075303564
+//     mov dword ptr[a + 0], eax
+//     ; a[1] : = 2
+//     mov eax, 1075303564
+//     mov dword ptr[a + 4], eax
+//     ; a[2] : = 3
+//     mov eax, 1075303564
+//     mov dword ptr[a + 8], eax
+//     ; a[3] : = 4
+//     mov eax, 1035303564
+//     mov dword ptr[a + 12], eax
+//     //mov b, 1075303564
+//     mov esi, 3
+//     movups xmm0, b;
+//     movups xmm1, a10;
+//     movups xmm2, param1
+//     movups xmm3, [4 * esi] + a
+//     //movups xmm3, d0;
+//     addss xmm3, xmm2 // + return result to first parametr
+//     //subss xmm1, xmm2 // - return result to first parametr
+//     //mulss xmm1, xmm2 // * return result to first parametr
+//     //divss xmm1, xmm2 // / return result to first parametr
+
+//     //mulss xmm0, xmm1;
+
+//     movups b, xmm3;
+//     //movups a1, xmm0;
+//     //movups d, xmm3;
+//   };
+
+//   for (int i = 0; i < 4; i++)
+//     cout << a[i] << " \n";
+//   cout << b << " ";
+//   //cout << a1 << " ";
+//   //cout << d << " ";
+
+//   cout << "Press Enter...";
+//   string t;
+//   getline(cin, t);
+// }
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length) {
