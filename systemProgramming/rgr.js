@@ -844,11 +844,14 @@ const calculations = (expression, table, variables) => {
     const after = el.after;
     for (let i = 0; i < after.length; i++) {
       if (!after[i].Type.includes(before[0].Type)) {
-        if (after[i].Type !== 'short' || before[i].Type !== 'double') {
-          errorLogging(`ERROR: Wrong expression. 
+        if (after[i].Type !== 'short' || before[i].Type !== 'double' ) {
+          if (before[i].Type !== 'double[4]') {
+            errorLogging(`ERROR: Wrong expression. 
         You can't assign '${after[i].token}' with '${after[i].Type}' type
         to variable '${before[i].token}' with '${before[i].Type}' type.`);
           process.exit(1);
+          }
+          
         }
       }
     }
@@ -1074,18 +1077,91 @@ const makeIEE754Hex = (int, float) => {
   return decIee754;
 };
 
+function compare(a, b) {
+  if (a[a.length-1] < b[b.length-1]) {
+    return -1;
+  }
+  if (a[a.length-1]>b[b.length-1]) {
+    return 1;
+  }
+  // a должно быть равным b
+  return 0;
+}
+
+
 //eax - 32
 console.log()
 let counter = 0;
-const operationsModified = Object.values(operations).filter(arr => arr.length).flat()
+let operationsModified = Object.values(operations).filter(arr => arr.length).flat()
+console.log(operationsModified)
 const exprNumber = Math.max(...(operationsModified.map((el, i, arr) => el[el.length-1])))
+console.log({exprNumber})
+
 const signsAvailable = ['+', '-', '*', '/'] 
+operationsModified = operationsModified.sort(compare)
 console.log(exprNumber, operationsModified)
+
 let flatted = operationsModified.flat();
 flatted = Array.from(new Set(flatted))
-console.log(flatted)
+console.log({flatted})
 
-for(let i = 0; i < exprNumber; i++) {
+let xmms= []
+console.log({splitted})
+
+const movupss = ['']
+
+splitted.forEach((arr, i, table) => {
+  if (arr[1].toString().length === 1) {
+    console.log({fuck: arr[1]})
+    // if (arr[0].toString() !== str[str.length-1]s
+    // console.log('movups xmm' + counter +', ' + arr[0][0])
+    // movupss.push('movups xmm' + counter +', ' + arr[0][0])
+    // xmms.push({['xmm' + counter]: arr[0][0]}) 
+    // counter++;  
+
+    console.log('movups xmm' + counter +', ' + arr[1][0])
+    movupss.push('movups xmm' + counter +', ' + arr[1][0])
+    xmms.push({['xmm' + counter]: arr[1][0]}) 
+    counter++;  
+
+  } else if (arr[0].toString().length === 1) {
+    //console.log({ar: table[i+1]})
+    movupss.forEach((str, index) => {
+      console.log({str, index})
+      if (arr[0].toString() !== str[str.length-1]){
+        console.log('Adding')
+        movupss[i] = 'movups xmm' + counter +', ' + arr[0][0]
+        xmms.push({['xmm' + counter]: arr[0][0]})
+        counter++;
+        index--; 
+      }
+      console.log('adsssssssssssss')
+    })
+  } else if (arr[0].toString().length > 1) {
+    movupss.forEach((str, index) => {
+      console.log({str, index})
+      if (arr[0].toString() !== str[str.length-1]){
+
+        const arrName = arr[0][0].slice(0, arr[0][0].indexOf('['))
+        const arrIndex = arr[0][0].slice(arr[0][0].indexOf('[')+1, arr[0][0].indexOf(']'))
+        console.log('array', arrName, arrIndex)
+        movupss[i] = 'mov esi, '+ arrIndex
+        movupss[i+1] = 'movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName
+
+
+        // movupss[i] = '' ,'movups xmm' + counter +', ' + arr[0][0]
+        // xmms.push({['xmm' + counter]: arr[0][0]})
+        counter++;
+        index--; 
+      }
+      //console.log('adsssssssssssss')
+    })
+  }
+})
+
+
+
+for(let i = 0; i < 1; i++) {
   //operationsModified.forEach((expr, i, arr) => {
     flatted.forEach((str, k, exprs) => {
       if (!signsAvailable.includes(str)) {
@@ -1095,8 +1171,13 @@ for(let i = 0; i < exprNumber; i++) {
             const arrName = str.slice(0, str.indexOf('['))
             const arrIndex = str.slice(str.indexOf('[')+1, str.indexOf(']'))
             // console.log('array', str, arrName, arrIndex)
-            console.log('mov esi, ', arrIndex)
-            console.log('movups xmm' + counter + ' ' + '[4 * esi] + ', arrName);
+            movupss.push('mov esi, '+ arrIndex)
+            movupss.push('movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName)
+
+            console.log('mov esi, '+ arrIndex)
+            console.log('movups xmm' + counter + ', ' + '[4 * esi] + ', arrName);
+            xmms.push({['xmm' + counter]: str}) 
+
             counter++;
           } 
           else if (parseFloat(str)) {
@@ -1107,15 +1188,20 @@ for(let i = 0; i < exprNumber; i++) {
                 varName = varObj.name;
               }
             })
-
-            console.log('movups xmm' + counter + ' ' + varName);
+            movupss.push('movups xmm' + counter + ', ' + varName)
+            
+            console.log('movups xmm' + counter + ', ' + varName);
+            xmms.push({['xmm' + counter]: str}) 
             counter++
 
 
           } else {
             //console.log('variable', str)
+            movupss.push('movups xmm' + counter + ', ' + str)
             
-            console.log('movups xmm' + counter + ' ' + str);
+            console.log('movups xmm' + counter + ', ' + str);
+            xmms.push({['xmm' + counter]: str}) 
+
             counter++;
           }
         }
@@ -1126,6 +1212,95 @@ for(let i = 0; i < exprNumber; i++) {
   //})
 }
 
+console.log(xmms)
+console.log({movupss})
+
+
+
+let counterExpr = 0
+for(let i =0; i < operationsModified.length; i++) {
+  for(let j =0; j < xmms.length; j++) {
+    const variable = Object.values(xmms[j])[0]
+    const key = Object.keys(xmms[j]).find(key => xmms[j][key] === variable);
+    if (operationsModified[i].includes(variable)) {
+      if (counterExpr === 0) {
+        const index = operationsModified[i].indexOf(variable)
+        operationsModified[i][index] = key
+      }
+
+    }
+  }
+}
+
+let dividedByExpr= [[]]
+
+let counterE = 0
+for(let i =0; i < operationsModified.length; i++) {
+  if (operationsModified[i][operationsModified[i].length-1] === counterE) {
+    dividedByExpr[counterE].push(operationsModified[i])
+  } else {
+    i--;
+    counterE++;
+    dividedByExpr[counterE] = []
+  }
+}
+
+console.log(operationsModified)
+//console.log(dividedByExpr)
+
+let firstXmm;
+let secondXmm
+
+const sseTransform = {
+  '+': 'addss',
+  '-': 'subss',
+  '*': 'mulss',
+  '/': 'divss'
+}
+
+let resultss = []
+
+dividedByExpr = dividedByExpr.map((arr, i, table) => {
+  arr.map((exp, j, exprs) => {
+    if (j === 0) {
+      //console.log(exp)
+      firstXmm = exp[0]
+      secondXmm = exp[2]
+      exp[1] = sseTransform[exp[1]]
+      resultss.push([exp[1], exp[0], exp[2]])
+    }
+    else {
+      if (exp.includes(firstXmm)) {
+        exp[1] = sseTransform[exp[1]]
+        //console.log(exp, firstXmm)
+        const index = exp.indexOf(firstXmm)
+        if (index !== 0) {
+          let temp = exp[0]
+          exp[0] = exp[2]
+          exp[2] = temp
+        }
+      resultss.push([exp[1], exp[0], exp[2]])
+      return [exp[0], exp[1], exp[2]]
+      }
+      else if (exp.includes(secondXmm)) {
+        exp[1] = sseTransform[exp[1]]
+        const index = exp.indexOf(secondXmm)
+        if (index !== 0) {
+          let temp = exp[0]
+          exp[0] = exp[2]
+          exp[2] = temp
+        }
+        exp[0] = firstXmm;
+        resultss.push([exp[1], exp[0], exp[2]])
+
+        return [exp[0], exp[1], exp[2]]
+      }
+
+    }
+  })
+})
+
+console.log(resultss)
 
 const movHandlerCreation = (obj, i, table) => {
   // ; a[0] : = 1
