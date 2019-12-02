@@ -1337,12 +1337,18 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
 resultss = resultss.map(expr => expr.join(' '))
 movupss.push(...resultss)
 
-console.log(resultss)
+console.log(movupss)
 const popping = []
 console.log({sp: splitted[1]})
 splitted.forEach((arr, i, table) => {
   arr.forEach((part, j, expression) => {
     if ((j === 1 && part.toString().length !== 1) && (j === 1 && part.toString().length !== 4) ) {
+      if (part[0].length !== 4 && part[0].length !== 1) {
+        part[0] = part[0].split(' ')[0]
+        console.log({ad: part[0]})
+
+      }
+      console.log({part})
       const assignment = part[0].trim()
       const variable = expression[0][0]
       console.log({variable, assignment})
@@ -1379,15 +1385,17 @@ const movHandlerCreation = (obj, i, table) => {
   //     mov dword ptr[a + 0], eax
   if (obj.index) {
     return `
-  ; ${obj.name}[${obj.index}] = ${obj.value}
-  mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
-  mov dword ptr[a+${obj.index * 4}], eax
+; ${obj.name}[${obj.index}] = ${obj.value}
+mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
+  
+mov dword ptr[a+${obj.index * 4}], eax
   `;
   }
   return `
-  ; ${obj.name} = ${obj.value}
-  mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
-  mov ${obj.name}, aex
+; ${obj.name} = ${obj.value}
+mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
+
+mov ${obj.name}, aex
   `;
 };
 
@@ -1396,7 +1404,7 @@ const movHandlerCreation = (obj, i, table) => {
 const output = creationStage.map((obj, i, arr) =>
   movHandlerCreation(obj, i, arr)
 );
-//console.log(output.join(''));
+console.log(output.join(''), movupss.join('\n\n'));
 
 //console.log(makeIEE754Hex(2, 0));
 
