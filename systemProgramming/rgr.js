@@ -1106,7 +1106,6 @@ flatted = Array.from(new Set(flatted))
 console.log({flatted})
 
 let xmms= []
-console.log({splitted})
 
 const movupss = ['']
 
@@ -1125,7 +1124,6 @@ splitted.forEach((arr, i, table) => {
     counter++;  
 
   } else if (arr[0].toString().length === 1) {
-    //console.log({ar: table[i+1]})
     movupss.forEach((str, index) => {
       console.log({str, index})
       if (arr[0].toString() !== str[str.length-1]){
@@ -1135,12 +1133,22 @@ splitted.forEach((arr, i, table) => {
         counter++;
         index--; 
       }
+      if (arr[1].toString() !== str[str.length-1] && arr[1].toString().length === 4) {
+        console.log({ar: arr[1]})
+        const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
+        const arrIndex = arr[1][0].slice(arr[1][0].indexOf('[')+1, arr[1][0].indexOf(']'))
+        console.log('array', arrName, arrIndex)
+        movupss.push('mov esi, '+ arrIndex)
+        movupss.push('movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName)
+        counter++
+        
+      }
       console.log('adsssssssssssss')
     })
   } else if (arr[0].toString().length > 1) {
     movupss.forEach((str, index) => {
       console.log({str, index})
-      if (arr[0].toString() !== str[str.length-1]){
+      if ((arr[0].toString() !== str[str.length-1]) || str === ''){
 
         const arrName = arr[0][0].slice(0, arr[0][0].indexOf('['))
         const arrIndex = arr[0][0].slice(arr[0][0].indexOf('[')+1, arr[0][0].indexOf(']'))
@@ -1156,7 +1164,7 @@ splitted.forEach((arr, i, table) => {
       }
       //console.log('adsssssssssssss')
     })
-  }
+  } 
 })
 
 
@@ -1245,7 +1253,7 @@ for(let i =0; i < operationsModified.length; i++) {
   }
 }
 
-console.log(operationsModified)
+//console.log(operationsModified)
 //console.log(dividedByExpr)
 
 let firstXmm;
@@ -1301,6 +1309,18 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
 })
 
 console.log(resultss)
+const popping = []
+console.log({sp: splitted[1]})
+splitted.forEach((arr, i, table) => {
+  arr.forEach((part, j, expression) => {
+    if ((j === 1 && part.toString().length === 1) || (j === 1 && part.toString().length === 4) ) {
+      console.log(expression[0], part)
+      const variable = expression[0];
+      //const key = Object.keys(xmms[j]).find(key => xmms[j][key] === variable);
+      movupss.push('movups ')
+    } 
+  })
+})
 
 const movHandlerCreation = (obj, i, table) => {
   // ; a[0] : = 1

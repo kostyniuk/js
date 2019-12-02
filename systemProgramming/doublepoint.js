@@ -65,7 +65,6 @@ module.exports = {
     standart = standart.split('');
     standart = standart.splice(0, 32);//64
     standart = standart.join('')
-    //console.log({shouldBe: '01000000000100110011001100110011', standart })
 
     return standart;
   },
