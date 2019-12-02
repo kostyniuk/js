@@ -1354,9 +1354,11 @@ splitted.forEach((arr, i, table) => {
       console.log({variable, assignment})
       xmms.forEach((obj, i, table) => {
         if (Object.values(obj)[0] === assignment) {
-          console.log('Found ', variable)
+          console.log('Found ', assignment)
           const register = Object.keys(obj)[0]
-          movupss.push(`movups ${variable}, ${register}`)
+          if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
+            movupss.push(`movups ${variable}, ${register}`)
+          }
         }
       })
     }
@@ -1370,7 +1372,10 @@ splitted.forEach((arr, i, table) => {
         if (Object.values(obj)[0] === assignment) {
           console.log('Found ', variable)
           const register = Object.keys(obj)[0]
-          movupss.push(`movups ${variable}, ${register}`)
+          console.log({movupss})
+          if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
+            movupss.push(`movups ${variable}, ${register}`)
+          }
         }
       })
     } 
