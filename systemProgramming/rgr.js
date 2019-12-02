@@ -1084,7 +1084,6 @@ function compare(a, b) {
   if (a[a.length-1]>b[b.length-1]) {
     return 1;
   }
-  // a должно быть равным b
   return 0;
 }
 
@@ -1339,7 +1338,7 @@ movupss.push(...resultss)
 
 console.log(movupss)
 const popping = []
-console.log({sp: splitted[1]})
+//console.log({sp: splitted[1]})
 splitted.forEach((arr, i, table) => {
   arr.forEach((part, j, expression) => {
     if ((j === 1 && part.toString().length !== 1) && (j === 1 && part.toString().length !== 4) ) {
@@ -1348,15 +1347,20 @@ splitted.forEach((arr, i, table) => {
         console.log({ad: part[0]})
 
       }
-      console.log({part})
+      //console.log({part})
       const assignment = part[0].trim()
-      const variable = expression[0][0]
-      console.log({variable, assignment})
+      let variable = expression[0][0]
+      //console.log({variable, assignment})
       xmms.forEach((obj, i, table) => {
         if (Object.values(obj)[0] === assignment) {
-          console.log('Found ', assignment)
+          //console.log('Found ', assignment)
           const register = Object.keys(obj)[0]
           if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
+            if (variable.length === 4) {
+              const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
+              const arrIndex = arr[1][0].slice(arr[1][0].indexOf('[')+1, arr[1][0].indexOf(']'))
+              variable = `[4 * ${arrIndex}] + ${arrName}`
+            }
             movupss.push(`movups ${variable}, ${register}`)
           }
         }
@@ -1364,7 +1368,7 @@ splitted.forEach((arr, i, table) => {
     }
     if ((j === 1 && part.toString().length === 1) || (j === 1 && part.toString().length === 4) ) {
       console.log('second', part.toString())
-      const variable = expression[0][0];
+      let variable = expression[0][0];
       const assignment = part[0]
       console.log(variable, assignment)
 
@@ -1373,9 +1377,15 @@ splitted.forEach((arr, i, table) => {
           console.log('Found ', variable)
           const register = Object.keys(obj)[0]
           console.log({movupss})
-          if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
-            movupss.push(`movups ${variable}, ${register}`)
+          if (variable.length === 4) {
+            const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
+            const arrIndex = arr[1][0].slice(arr[1][0].indexOf('[')+1, arr[1][0].indexOf(']'))
+            variable = `[4 * ${arrIndex}] + ${arrName}`
+            if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
+              movupss.push(`movups ${variable}, ${register}`)
+            }
           }
+          
         }
       })
     } 
