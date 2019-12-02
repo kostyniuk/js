@@ -1121,9 +1121,33 @@ splitted.forEach((arr, i, table) => {
     console.log('movups xmm' + counter +', ' + arr[1][0])
     movupss.push('movups xmm' + counter +', ' + arr[1][0])
     xmms.push({['xmm' + counter]: arr[1][0]}) 
-    counter++;  
+    counter++;
+    
+    if (arr[0].toString().length === 1) {
+      console.log({xmms})
+      console.log(arr[0].toString())
+      const values = []
+      xmms.forEach(obj => {
+        values.push(Object.values(obj)[0])          
+        }  
+      )
+      if (!values.includes(arr[0].toString())) {
+        movupss.push('movups xmm' + counter +', ' + arr[0][0])
+        xmms.push({['xmm' + counter]: arr[0][0]})
+        counter++;
+      }
 
+      console.log(values)
+    //movupss.forEach((str, index) => {
+      //console.log({str: str[str.length-1], index})
+      //console.log(arr[0].toString())
+      //if (arr[0].toString() !== str[str.length-1]){
+        //console.log('Adding')
+        
+        //index++;
+      }
   } else if (arr[0].toString().length === 1) {
+    console.log({isNhere: arr[0]})
     movupss.forEach((str, index) => {
       console.log({str, index})
       if (arr[0].toString() !== str[str.length-1]){
@@ -1140,6 +1164,8 @@ splitted.forEach((arr, i, table) => {
         console.log('array', arrName, arrIndex)
         movupss.push('mov esi, '+ arrIndex)
         movupss.push('movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName)
+        xmms.push({['xmm' + counter]: `${arrName}[${arrIndex}]`})
+        
         counter++
         
       }
@@ -1275,7 +1301,7 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
       firstXmm = exp[0]
       secondXmm = exp[2]
       exp[1] = sseTransform[exp[1]]
-      resultss.push([exp[1], exp[0], exp[2]])
+      resultss.push([exp[1], exp[0].concat(','), exp[2]])
     }
     else {
       if (exp.includes(firstXmm)) {
@@ -1287,7 +1313,7 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
           exp[0] = exp[2]
           exp[2] = temp
         }
-      resultss.push([exp[1], exp[0], exp[2]])
+      resultss.push([exp[1], exp[0].concat(','), exp[2]])
       return [exp[0], exp[1], exp[2]]
       }
       else if (exp.includes(secondXmm)) {
@@ -1299,7 +1325,7 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
           exp[2] = temp
         }
         exp[0] = firstXmm;
-        resultss.push([exp[1], exp[0], exp[2]])
+        resultss.push([exp[1], exp[0].concat(','), exp[2]])
 
         return [exp[0], exp[1], exp[2]]
       }
@@ -1308,19 +1334,44 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
   })
 })
 
+resultss = resultss.map(expr => expr.join(' '))
+movupss.push(...resultss)
+
 console.log(resultss)
 const popping = []
 console.log({sp: splitted[1]})
 splitted.forEach((arr, i, table) => {
   arr.forEach((part, j, expression) => {
+    if ((j === 1 && part.toString().length !== 1) && (j === 1 && part.toString().length !== 4) ) {
+      const assignment = part[0].trim()
+      const variable = expression[0][0]
+      console.log({variable, assignment})
+      xmms.forEach((obj, i, table) => {
+        if (Object.values(obj)[0] === assignment) {
+          console.log('Found ', variable)
+          const register = Object.keys(obj)[0]
+          movupss.push(`movups ${variable}, ${register}`)
+        }
+      })
+    }
     if ((j === 1 && part.toString().length === 1) || (j === 1 && part.toString().length === 4) ) {
-      console.log(expression[0], part)
-      const variable = expression[0];
-      //const key = Object.keys(xmms[j]).find(key => xmms[j][key] === variable);
-      movupss.push('movups ')
+      console.log('second', part.toString())
+      const variable = expression[0][0];
+      const assignment = part[0]
+      console.log(variable, assignment)
+
+      xmms.forEach((obj, i, table) => {
+        if (Object.values(obj)[0] === assignment) {
+          console.log('Found ', variable)
+          const register = Object.keys(obj)[0]
+          movupss.push(`movups ${variable}, ${register}`)
+        }
+      })
     } 
   })
 })
+
+console.log(movupss)
 
 const movHandlerCreation = (obj, i, table) => {
   // ; a[0] : = 1
