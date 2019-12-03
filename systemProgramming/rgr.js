@@ -155,7 +155,10 @@ const reserved = [
 ];
 
 let expressions = str.split(';').slice(0, -1);
+
+let action = process.argv[3].split(';').slice(0, -1);
 expressions = expressions.map(el => el.trim());
+action = action.map(el => el.trim())
 
 const getTokens = (expressions, string = '') => {
   let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
@@ -176,6 +179,11 @@ const getTokens = (expressions, string = '') => {
   } else {
     symbolsUsed = getAllSymbols(string, singleSymb, multipleSymb);
   }
+
+  if (symbolsUsed.length < 18) {
+    fs.writeFileSync('actions.json', JSON.stringify(symbolsUsed))
+  }
+  
 
   return { keyWords, ids, floats, integers, symbolsUsed };
 };
@@ -259,6 +267,13 @@ const lexemsSort = lexems =>
   });
 
 const myTokens = getTokens(expressions);
+const actTokens = getTokens(action);
+actTokens.keyWords = []
+let symbol = fs.readFileSync('actions.json', 'UTF-8')
+symbol = Array.from(symbol)
+actTokens.symbolsUsed = symbol
+let actLexems = getIndexes(process.argv[3], actTokens)
+actLexems = lexemsSort(actLexems).filter(obj => obj.index !== -1);
 
 let lexems = getIndexes(str, myTokens);
 lexems = lexemsSort(lexems);
@@ -1064,7 +1079,7 @@ creationStage = creationStage.map(obj => {
   };
 });
 
-console.log({ creationStage });
+//console.log({ creationStage });
 
 const helper = require('./doublepoint');
 const int = 2;
@@ -1089,20 +1104,20 @@ function compare(a, b) {
 
 
 //eax - 32
-console.log()
+//console.log()
 let counter = 0;
 let operationsModified = Object.values(operations).filter(arr => arr.length).flat()
-console.log(operationsModified)
+//console.log(operationsModified)
 const exprNumber = Math.max(...(operationsModified.map((el, i, arr) => el[el.length-1])))
-console.log({exprNumber})
+//console.log({exprNumber})
 
 const signsAvailable = ['+', '-', '*', '/'] 
 operationsModified = operationsModified.sort(compare)
-console.log(exprNumber, operationsModified)
+//console.log(exprNumber, operationsModified)
 
 let flatted = operationsModified.flat();
 flatted = Array.from(new Set(flatted))
-console.log({flatted})
+//console.log({flatted})
 
 let xmms= []
 
@@ -1110,21 +1125,21 @@ const movupss = ['']
 
 splitted.forEach((arr, i, table) => {
   if (arr[1].toString().length === 1) {
-    console.log({fuck: arr[1]})
+    //console.log({fuck: arr[1]})
     // if (arr[0].toString() !== str[str.length-1]s
     // console.log('movups xmm' + counter +', ' + arr[0][0])
     // movupss.push('movups xmm' + counter +', ' + arr[0][0])
     // xmms.push({['xmm' + counter]: arr[0][0]}) 
     // counter++;  
 
-    console.log('movups xmm' + counter +', ' + arr[1][0])
+    //console.log('movups xmm' + counter +', ' + arr[1][0])
     movupss.push('movups xmm' + counter +', ' + arr[1][0])
     xmms.push({['xmm' + counter]: arr[1][0]}) 
     counter++;
     
     if (arr[0].toString().length === 1) {
-      console.log({xmms})
-      console.log(arr[0].toString())
+      //console.log({xmms})
+      //console.log(arr[0].toString())
       const values = []
       xmms.forEach(obj => {
         values.push(Object.values(obj)[0])          
@@ -1136,7 +1151,7 @@ splitted.forEach((arr, i, table) => {
         counter++;
       }
 
-      console.log(values)
+      //console.log(values)
     //movupss.forEach((str, index) => {
       //console.log({str: str[str.length-1], index})
       //console.log(arr[0].toString())
@@ -1146,21 +1161,21 @@ splitted.forEach((arr, i, table) => {
         //index++;
       }
   } else if (arr[0].toString().length === 1) {
-    console.log({isNhere: arr[0]})
+    //console.log({isNhere: arr[0]})
     movupss.forEach((str, index) => {
-      console.log({str, index})
+      //console.log({str, index})
       if (arr[0].toString() !== str[str.length-1]){
-        console.log('Adding')
+        //console.log('Adding')
         movupss[i] = 'movups xmm' + counter +', ' + arr[0][0]
         xmms.push({['xmm' + counter]: arr[0][0]})
         counter++;
         index--; 
       }
       if (arr[1].toString() !== str[str.length-1] && arr[1].toString().length === 4) {
-        console.log({ar: arr[1]})
+        //console.log({ar: arr[1]})
         const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
         const arrIndex = arr[1][0].slice(arr[1][0].indexOf('[')+1, arr[1][0].indexOf(']'))
-        console.log('array', arrName, arrIndex)
+        //console.log('array', arrName, arrIndex)
         movupss.push('mov esi, '+ arrIndex)
         movupss.push('movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName)
         xmms.push({['xmm' + counter]: `${arrName}[${arrIndex}]`})
@@ -1168,16 +1183,16 @@ splitted.forEach((arr, i, table) => {
         counter++
         
       }
-      console.log('adsssssssssssss')
+      //console.log('adsssssssssssss')
     })
   } else if (arr[0].toString().length > 1) {
     movupss.forEach((str, index) => {
-      console.log({str, index})
+      //console.log({str, index})
       if ((arr[0].toString() !== str[str.length-1]) || str === ''){
 
         const arrName = arr[0][0].slice(0, arr[0][0].indexOf('['))
         const arrIndex = arr[0][0].slice(arr[0][0].indexOf('[')+1, arr[0][0].indexOf(']'))
-        console.log('array', arrName, arrIndex)
+        //console.log('array', arrName, arrIndex)
         movupss[i] = 'mov esi, '+ arrIndex
         movupss[i+1] = 'movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName
 
@@ -1192,8 +1207,6 @@ splitted.forEach((arr, i, table) => {
   } 
 })
 
-
-
 for(let i = 0; i < 1; i++) {
   //operationsModified.forEach((expr, i, arr) => {
     flatted.forEach((str, k, exprs) => {
@@ -1207,8 +1220,8 @@ for(let i = 0; i < 1; i++) {
             movupss.push('mov esi, '+ arrIndex)
             movupss.push('movups xmm' + counter + ', ' + '[4 * esi] + '+ arrName)
 
-            console.log('mov esi, '+ arrIndex)
-            console.log('movups xmm' + counter + ', ' + '[4 * esi] + ', arrName);
+            //console.log('mov esi, '+ arrIndex)
+            //console.log('movups xmm' + counter + ', ' + '[4 * esi] + ', arrName);
             xmms.push({['xmm' + counter]: str}) 
 
             counter++;
@@ -1223,7 +1236,7 @@ for(let i = 0; i < 1; i++) {
             })
             movupss.push('movups xmm' + counter + ', ' + varName)
             
-            console.log('movups xmm' + counter + ', ' + varName);
+            //console.log('movups xmm' + counter + ', ' + varName);
             xmms.push({['xmm' + counter]: str}) 
             counter++
 
@@ -1232,7 +1245,7 @@ for(let i = 0; i < 1; i++) {
             //console.log('variable', str)
             movupss.push('movups xmm' + counter + ', ' + str)
             
-            console.log('movups xmm' + counter + ', ' + str);
+            //console.log('movups xmm' + counter + ', ' + str);
             xmms.push({['xmm' + counter]: str}) 
 
             counter++;
@@ -1245,8 +1258,8 @@ for(let i = 0; i < 1; i++) {
   //})
 }
 
-console.log(xmms)
-console.log({movupss})
+//console.log(xmms)
+//console.log({movupss})
 
 
 
@@ -1336,7 +1349,7 @@ dividedByExpr = dividedByExpr.map((arr, i, table) => {
 resultss = resultss.map(expr => expr.join(' '))
 movupss.push(...resultss)
 
-console.log(movupss)
+//console.log(movupss)
 const popping = []
 //console.log({sp: splitted[1]})
 splitted.forEach((arr, i, table) => {
@@ -1344,10 +1357,10 @@ splitted.forEach((arr, i, table) => {
     if ((j === 1 && part.toString().length !== 1) && (j === 1 && part.toString().length !== 4) ) {
       if (part[0].length !== 4 && part[0].length !== 1) {
         part[0] = part[0].split(' ')[0]
-        console.log({ad: part[0]})
+        //console.log({ad: part[0]})
 
       }
-      //console.log({part})
+      console.log({part})
       const assignment = part[0].trim()
       let variable = expression[0][0]
       //console.log({variable, assignment})
@@ -1367,16 +1380,16 @@ splitted.forEach((arr, i, table) => {
       })
     }
     if ((j === 1 && part.toString().length === 1) || (j === 1 && part.toString().length === 4) ) {
-      console.log('second', part.toString())
+      //console.log('second', part.toString())
       let variable = expression[0][0];
       const assignment = part[0]
-      console.log(variable, assignment)
+      //console.log(variable, assignment)
 
       xmms.forEach((obj, i, table) => {
         if (Object.values(obj)[0] === assignment) {
           console.log('Found ', variable)
           const register = Object.keys(obj)[0]
-          console.log({movupss})
+          //console.log({movupss})
           if (variable.length === 4) {
             const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
             const arrIndex = arr[1][0].slice(arr[1][0].indexOf('[')+1, arr[1][0].indexOf(']'))
@@ -1384,7 +1397,11 @@ splitted.forEach((arr, i, table) => {
             if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
               movupss.push(`movups ${variable}, ${register}`)
             }
-          }
+          }//else {
+          //   console.log({variable, register})
+          //   movupss.push(`movups ${variable}, ${register}`)
+
+          // }
           
         }
       })
@@ -1417,7 +1434,7 @@ output.push('\n\n')
 let final = [output.join(''), movupss.join('\n')]
 final = final.join('')
 
-console.log(final)
+//console.log(final)
 //const final = output.join(''), movupss.join('\n'));
 // console.log(finalArr)
 const time = new Date().now
@@ -1690,7 +1707,8 @@ const checking = (lexTable, index) => {
   }
   return 'syntax is correct';
 };
+//console.log({actLexems})
 
-checking(lexems, 0);
-checking(actions, 0);
+//checking(lexems, 0);
+checking(actLexems, 0);
 
