@@ -5,7 +5,6 @@
 
 */
 module.exports = (expression, singles, multiples) => {
-
   const getSinglesSymbols = (expression, singles) => {
     const single = [];
     for (let index = 0; index < expression.length; index++) {

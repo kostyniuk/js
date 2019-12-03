@@ -1207,6 +1207,8 @@ splitted.forEach((arr, i, table) => {
   } 
 })
 
+console.log({flatted})
+
 for(let i = 0; i < 1; i++) {
   //operationsModified.forEach((expr, i, arr) => {
     flatted.forEach((str, k, exprs) => {
@@ -1242,13 +1244,19 @@ for(let i = 0; i < 1; i++) {
 
 
           } else {
-            //console.log('variable', str)
-            movupss.push('movups xmm' + counter + ', ' + str)
+            const alreadyThere = []
+            console.log('variable', str, xmms)
+            xmms.forEach(obj => alreadyThere.push(Object.values(obj)[0]))
+            console.log({alreadyThere})
+            if (!alreadyThere.includes(str)) {
+              movupss.push('movups xmm' + counter + ', ' + str)
             
-            //console.log('movups xmm' + counter + ', ' + str);
+            console.log('movups xmm' + counter + ', ' + str);
             xmms.push({['xmm' + counter]: str}) 
 
             counter++;
+            }
+            
           }
         }
       }
@@ -1368,6 +1376,7 @@ splitted.forEach((arr, i, table) => {
         if (Object.values(obj)[0] === assignment) {
           //console.log('Found ', assignment)
           const register = Object.keys(obj)[0]
+          //console.log({previous: movupss[movupss.length - 1]})
           if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
             if (variable.length === 4) {
               const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['))
@@ -1380,10 +1389,8 @@ splitted.forEach((arr, i, table) => {
       })
     }
     if ((j === 1 && part.toString().length === 1) || (j === 1 && part.toString().length === 4) ) {
-      //console.log('second', part.toString())
       let variable = expression[0][0];
-      const assignment = part[0]
-      //console.log(variable, assignment)
+      const assignment = part[0] // need to be space here
 
       xmms.forEach((obj, i, table) => {
         if (Object.values(obj)[0] === assignment) {
@@ -1397,11 +1404,13 @@ splitted.forEach((arr, i, table) => {
             if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
               movupss.push(`movups ${variable}, ${register}`)
             }
-          }//else {
-          //   console.log({variable, register})
-          //   movupss.push(`movups ${variable}, ${register}`)
-
-          // }
+          }else {
+            const ex = `movups ${variable}, ${register}`
+             console.log({variable, register, movupss})
+             if (movupss[movupss.length - 1] !== `movups ${variable}, ${register}`) {
+              movupss.push(`movups ${variable}, ${register}`)
+            }
+           }
           
         }
       })
