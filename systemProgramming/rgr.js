@@ -1400,18 +1400,12 @@ const movHandlerCreation = (obj, i, table) => {
   //     mov dword ptr[a + 0], eax
   if (obj.index) {
     return `
-; ${obj.name}[${obj.index}] = ${obj.value}
 mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
-  
-mov dword ptr[a+${obj.index * 4}], eax
+mov dword ptr[a+${obj.index * 4}], eax  // ${obj.name}[${obj.index}] = ${obj.value}
   `;
   }
   return `
-; ${obj.name} = ${obj.value}
-mov eax, ${makeIEE754Hex(obj.intPart, obj.floatPart)}
-
-mov ${obj.name}, aex
-  `;
+mov ${obj.name}, ${makeIEE754Hex(obj.intPart, obj.floatPart)} //${obj.name} = ${obj.value}`;
 };
 
 //movupsHandlerCreation
@@ -1419,7 +1413,17 @@ mov ${obj.name}, aex
 const output = creationStage.map((obj, i, arr) =>
   movHandlerCreation(obj, i, arr)
 );
-console.log(output.join(''), movupss.join('\n\n'));
+
+let final = [output.join(''), movupss.join('\n')]
+final = final.join('')
+
+console.log(final)
+//const final = output.join(''), movupss.join('\n'));
+// console.log(finalArr)
+const time = new Date().now
+const path = './rgr-tests/a'+'.asm'
+fs.writeFileSync(path, JSON.stringify(final));
+
 
 //console.log(makeIEE754Hex(2, 0));
 
@@ -1489,10 +1493,13 @@ console.log(output.join(''), movupss.join('\n\n'));
 //   getline(cin, t);
 // }
 
+
 const checking = (lexTable, index) => {
-  if (index === lexTable.length) {
-    process.exit(0);
+  if (index === lexTable.length-1) {
+    console.log(('Syntax is correct'))
+    process.exit(0)
   }
+  //console.log(lexems[index])
   const lexem = lexTable[index];
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexem.type !== 'ID') {
@@ -1681,8 +1688,9 @@ const checking = (lexTable, index) => {
     index++;
     checking(lexTable, index);
   }
-  //return 'syntax is correct';
+  return 'syntax is correct';
 };
 
 checking(lexems, 0);
 checking(actions, 0);
+
