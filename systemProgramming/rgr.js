@@ -1518,11 +1518,14 @@ fs.writeFileSync(path, final);
 //   string t;
 //   getline(cin, t);
 // }
+console.log({actLexems})
 
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length-1) {
     console.log(('Syntax is correct'))
+    //console.log(lexTable)
+    return
     process.exit(0)
   }
   //console.log(lexems[index])
@@ -1716,7 +1719,6 @@ const checking = (lexTable, index) => {
   }
   return 'syntax is correct';
 };
-//console.log({actLexems})
 
 //checking(lexems, 0);
 checking(actLexems, 0);
