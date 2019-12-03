@@ -1413,7 +1413,7 @@ mov ${obj.name}, ${makeIEE754Hex(obj.intPart, obj.floatPart)} //${obj.name} = ${
 const output = creationStage.map((obj, i, arr) =>
   movHandlerCreation(obj, i, arr)
 );
-
+output.push('\n\n')
 let final = [output.join(''), movupss.join('\n')]
 final = final.join('')
 
@@ -1422,7 +1422,7 @@ console.log(final)
 // console.log(finalArr)
 const time = new Date().now
 const path = './rgr-tests/a'+'.asm'
-fs.writeFileSync(path, JSON.stringify(final));
+fs.writeFileSync(path, final);
 
 
 //console.log(makeIEE754Hex(2, 0));
