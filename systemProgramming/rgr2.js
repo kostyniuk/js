@@ -1409,30 +1409,33 @@ const main = () => {
           part[0] = part[0].split(' ')[0];
           //console.log({ad: part[0]})
         }
-        console.log({ part });
-        const assignment = part[0].trim();
-        let variable = expression[0][0];
-        //console.log({variable, assignment})
-        xmms.forEach((obj, i, table) => {
-          if (Object.values(obj)[0] === assignment) {
-            //console.log('Found ', assignment)
-            const register = Object.keys(obj)[0];
-            //console.log({previous: movupss[movupss.length - 1]})
-            if (
-              movupss[movupss.length - 1] !== `movups ${variable}, ${register}`
-            ) {
-              if (variable.length === 4) {
-                const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['));
-                const arrIndex = arr[1][0].slice(
-                  arr[1][0].indexOf('[') + 1,
-                  arr[1][0].indexOf(']')
-                );
-                variable = `[4 * ${arrIndex}] + ${arrName}`;
+        console.log({ part, expression });
+        if (!expression[0][0].includes('[')) {
+          const assignment = part[0].trim();
+          let variable = expression[0][0];
+          //console.log({variable, assignment})
+          xmms.forEach((obj, i, table) => {
+            if (Object.values(obj)[0] === assignment) {
+              //console.log('Found ', assignment)
+              const register = Object.keys(obj)[0];
+              //console.log({previous: movupss[movupss.length - 1]})
+              if (
+                movupss[movupss.length - 1] !== `movups ${variable}, ${register}`
+              ) {
+                if (variable.length === 4) {
+                  const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['));
+                  const arrIndex = arr[1][0].slice(
+                    arr[1][0].indexOf('[') + 1,
+                    arr[1][0].indexOf(']')
+                  );
+                  variable = `[4 * ${arrIndex}] + ${arrName}`;
+                }
+                movupss.push(`movups ${variable}, ${register}`);
               }
-              movupss.push(`movups ${variable}, ${register}`);
             }
-          }
-        });
+          });
+        }
+        
       }
       if (
         (j === 1 && part.toString().length === 1) ||
@@ -1440,19 +1443,32 @@ const main = () => {
       ) {
         let variable = expression[0][0];
         const assignment = part[0]; // need to be space here
-
+        console.log({variable})
         xmms.forEach((obj, i, table) => {
           if (Object.values(obj)[0] === assignment) {
             //console.log('Found ', variable);
             const register = Object.keys(obj)[0];
             //console.log({movupss})
             if (variable.length === 4) {
-              const arrName = arr[1][0].slice(0, arr[1][0].indexOf('['));
-              const arrIndex = arr[1][0].slice(
+              let arrName = arr[1][0].slice(0, arr[1][0].indexOf('['));
+              let arrIndex = arr[1][0].slice(
                 arr[1][0].indexOf('[') + 1,
                 arr[1][0].indexOf(']')
               );
+              if (arrName === '' && arrIndex === '') {
+                console.log(arr[0][0].indexOf('['))
+                arrName = arr[0][0].slice(0, arr[0][0].indexOf('['));
+                arrIndex = arr[0][0].slice(
+                arr[0][0].indexOf('[') + 1,
+                arr[0][0].indexOf(']')
+
+              );
+
+              }
+              //console.log({arrName, arrIndex})
+
               variable = `[4 * ${arrIndex}] + ${arrName}`;
+              console.log({variable})
               if (
                 movupss[movupss.length - 1] !==
                 `movups ${variable}, ${register}`
