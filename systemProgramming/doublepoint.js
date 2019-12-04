@@ -23,18 +23,26 @@ const BintoHex = {
 
 module.exports = {
   makeIEE754: (integer, float) => {
-
+    let minus = false;
+    if (integer[0] === '-') {
+      minus = true;
+      integer = integer.replace('-', '').trim();
+    }
     const calc = left => {
-
+      
       let flagLeft = 1;
       let current = Math.floor(left / 2);
       const binaries = [left % 2];
       while (flagLeft) {
-        binaries.push(current % 2);
-        current = Math.floor(current / 2);
         if (current === 0) {
           flagLeft = 0;
+          break;
         }
+        binaries.push(current % 2);
+        current = Math.floor(current / 2);
+        // if (current === 0) {
+        //   flagLeft = 0;
+        // }
       }
       return binaries.reverse();
     };
@@ -61,11 +69,11 @@ module.exports = {
     let e = 127 + E ;//1023
     e = itb.unsigned(e, 8);//11
 
-    let standart = `0${e}${m}`;
+    const sign = minus ? 1 : 0 
+    let standart = `${sign}${e}${m}`;
     standart = standart.split('');
     standart = standart.splice(0, 32);//64
-    standart = standart.join('')
-
+    standart = standart.join('');
     return standart;
   },
 
