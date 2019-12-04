@@ -182,7 +182,7 @@ const getTokens = (expressions, string = '') => {
   }
   console.log({symbolsUsed})
   if (symbolsUsed.length < 18) {
-    console.log(symbolsUsed)
+    //console.log(symbolsUsed)
     fs.writeFileSync('actions.json', JSON.stringify(symbolsUsed));
   }
 
@@ -267,12 +267,13 @@ const lexemsSort = lexems =>
     return 0;
   });
 
+const actTokens = getTokens(action, process.argv[3]);// !!!need to have second parametr
 const myTokens = getTokens(expressions);
-const actTokens = getTokens(action);
+
 actTokens.keyWords = [];
 let symbol = fs.readFileSync('actions.json', 'UTF-8');
 symbol = Array.from(symbol).filter(el => el!== '"');
-console.log({symbol})
+//console.log({symbol})
 actTokens.symbolsUsed = symbol;
 actTokens.symbolsUsed.push('+', '-', '*', '/');
 let actLexems = getIndexes(process.argv[3], actTokens);
@@ -280,7 +281,9 @@ actLexems = lexemsSort(actLexems).filter(obj => obj.index !== -1);
 
 let lexems = getIndexes(str, myTokens);
 lexems = lexemsSort(lexems).filter(lexem => lexem.index !== -1);
-console.log({lexems})
+//console.log({lexems})
+
+let arrayIndex;
 
 const main = () => {
   const unresolved = isUnresolved(lexems, original);
@@ -513,7 +516,10 @@ const main = () => {
           if (lexems[i].Type) {
             if (lexems[i].Type[lexems[i].Type.length - 1] === ']') {
               const num = lexems[i].Type.match(/\d+/)[0];
+              arrayIndex = num - 1
+
               if (num - 1 < arrOfVar[j].index) {
+                console.log(num - 1)
                 const variable = arrOfVar[j].name;
                 const index = arrOfVar[j].index;
                 errorLogging(
@@ -986,7 +992,11 @@ const main = () => {
     //console.log(splitted);
     const exprs = splitted.map(arr => arr[1]);
 
-    //console.log({exprs});
+    console.log({exprs});
+    if (exprs[0].includes('[-')) {
+      console.log(`ERROR: Index of a array should be >= 0 and <= ${arrayIndex}`);
+      process.exit(0)
+    }
 
     const hash = {};
     for (let i = 0; i < splitted.length; i++) {
@@ -1578,9 +1588,9 @@ let coun = 0;
 const checking = (lexTable, index) => {
   if (index === lexTable.length - 1) {
     coun++;
-    console.log('Syntax1 is correct');
+    //console.log('Syntax1 is correct');
     if (coun === 1) checking(lexems, 0);
-    if (coun === 2) console.log('Its ok');
+    if (coun === 2) console.log('Syntax is right');
     main();
     process.exit(0);
   }
@@ -1618,7 +1628,7 @@ const checking = (lexTable, index) => {
       }
     }
 
-    console.log('ID', lexem);
+    //console.log('ID', lexem);
     if (
       lexTable[index + 1].type === 'assignment_operator' ||
       lexTable[index + 1].type === 'unary-operator' ||
