@@ -164,7 +164,8 @@ const getTokens = (expressions, string = '') => {
   let ids = expressions.map(el => el.match(/[A-Za-z_][A-Za-z0-9_]*/g));
   let floats = expressions.map(el => el.match(/[0-9]+[.][0-9]+/g)).flat();
   floats = floats.filter(obj => obj);
-  let integers = expressions.map(el => el.match(/\d+/g)).flat();
+  //let integers = expressions.map(el => el.match(/\d+/g)).flat();
+  let integers = expressions.map(el => el.match(/[-+]?\d+/gm)).flat();
   integers = integers.filter(obj => obj);
   integers = eliminateFloatsFromInts(floats, integers);
 
@@ -179,8 +180,9 @@ const getTokens = (expressions, string = '') => {
   } else {
     symbolsUsed = getAllSymbols(string, singleSymb, multipleSymb);
   }
-
+  console.log({symbolsUsed})
   if (symbolsUsed.length < 18) {
+    console.log(symbolsUsed)
     fs.writeFileSync('actions.json', JSON.stringify(symbolsUsed));
   }
 
@@ -269,14 +271,16 @@ const myTokens = getTokens(expressions);
 const actTokens = getTokens(action);
 actTokens.keyWords = [];
 let symbol = fs.readFileSync('actions.json', 'UTF-8');
-symbol = Array.from(symbol);
+symbol = Array.from(symbol).filter(el => el!== '"');
+console.log({symbol})
 actTokens.symbolsUsed = symbol;
-actTokens.symbolsUsed.push('+', '-', '*', '/')
+actTokens.symbolsUsed.push('+', '-', '*', '/');
 let actLexems = getIndexes(process.argv[3], actTokens);
 actLexems = lexemsSort(actLexems).filter(obj => obj.index !== -1);
 
 let lexems = getIndexes(str, myTokens);
-lexems = lexemsSort(lexems);
+lexems = lexemsSort(lexems).filter(lexem => lexem.index !== -1);
+console.log({lexems})
 
 const main = () => {
   const unresolved = isUnresolved(lexems, original);
@@ -1106,6 +1110,9 @@ const main = () => {
     return decIee754;
   };
 
+  //console.log({one: makeIEE754Hex(1, 0)})
+  //console.log({two: makeIEE754Hex(0, 0)})
+
   function compare(a, b) {
     if (a[a.length - 1] < b[b.length - 1]) {
       return -1;
@@ -1156,7 +1163,7 @@ const main = () => {
 
       if (arr[0].toString().length === 1) {
         //console.log({xmms})
-        //console.log(arr[0].toString())
+        console.log({ arr: arr[0].toString() });
         const values = [];
         xmms.forEach(obj => {
           values.push(Object.values(obj)[0]);
@@ -1333,25 +1340,30 @@ const main = () => {
 
   let resultss = [];
 
+  console.log(dividedByExpr)
+
   dividedByExpr = dividedByExpr.map((arr, i, table) => {
     arr.map((exp, j, exprs) => {
       if (j === 0) {
-        //console.log(exp)
+        console.log(exp)
         firstXmm = exp[0];
         secondXmm = exp[2];
         exp[1] = sseTransform[exp[1]];
         resultss.push([exp[1], exp[0].concat(','), exp[2]]);
       } else {
+        console.log({exp, firstXmm, secondXmm})
         if (exp.includes(firstXmm)) {
           exp[1] = sseTransform[exp[1]];
-          //console.log(exp, firstXmm)
+          console.log({exp, firstXmm})
           const index = exp.indexOf(firstXmm);
           if (index !== 0) {
             let temp = exp[0];
             exp[0] = exp[2];
             exp[2] = temp;
           }
-          resultss.push([exp[1], exp[0].concat(','), exp[2]]);
+          resultss.push([exp[1], exp[2].concat(','), exp[0]]);
+          console.log(resultss)
+          console.log({resL : [exp[1], exp[2], exp[0]]}) // need to be checked
           return [exp[0], exp[1], exp[2]];
         } else if (exp.includes(secondXmm)) {
           exp[1] = sseTransform[exp[1]];
@@ -1421,7 +1433,7 @@ const main = () => {
 
         xmms.forEach((obj, i, table) => {
           if (Object.values(obj)[0] === assignment) {
-            console.log('Found ', variable);
+            //console.log('Found ', variable);
             const register = Object.keys(obj)[0];
             //console.log({movupss})
             if (variable.length === 4) {
@@ -1490,7 +1502,9 @@ mov ${obj.name}, ${makeIEE754Hex(obj.intPart, obj.floatPart)} //${obj.name} = ${
   fs.writeFileSync(path, final);
 };
 
-//console.log(makeIEE754Hex(2, 0));
+
+
+//console.log(makeIEE754Hex(0, 0));
 
 // #include <iostream>
 // #include <string>
@@ -1557,12 +1571,12 @@ mov ${obj.name}, ${makeIEE754Hex(obj.intPart, obj.floatPart)} //${obj.name} = ${
 //   string t;
 //   getline(cin, t);
 // }
-console.log(actTokens)
-console.log({actLexems})
+//console.log(actTokens);
+//console.log({ actLexems });
 let coun = 0;
 
 const checking = (lexTable, index) => {
-  if (index === lexTable.length) {
+  if (index === lexTable.length - 1) {
     coun++;
     console.log('Syntax1 is correct');
     if (coun === 1) checking(lexems, 0);
