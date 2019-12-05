@@ -180,7 +180,7 @@ const getTokens = (expressions, string = '') => {
   } else {
     symbolsUsed = getAllSymbols(string, singleSymb, multipleSymb);
   }
-  console.log({symbolsUsed})
+  //console.log({symbolsUsed})
   if (symbolsUsed.length < 18) {
     //console.log(symbolsUsed)
     fs.writeFileSync('actions.json', JSON.stringify(symbolsUsed));
@@ -363,6 +363,14 @@ const main = () => {
     }
   });
 
+  const actBr = isOpenBracketBefore(actLexems, actLexems.length);
+  actBr.forEach(el => {
+    if (el !== 0) {
+      console.log(el)
+      errorLogging('ERROR: Quantity of brackets doesnt match');
+    }
+  });
+
   const setArrayTypes = lexems => {
     const original = lexems;
     lexems.forEach((lexem, i, table) => {
@@ -519,7 +527,7 @@ const main = () => {
               arrayIndex = num - 1
 
               if (num - 1 < arrOfVar[j].index) {
-                console.log(num - 1)
+                //console.log(num - 1)
                 const variable = arrOfVar[j].name;
                 const index = arrOfVar[j].index;
                 errorLogging(
@@ -576,10 +584,10 @@ const main = () => {
       const { name, type, value } = variable;
       if (variable.type === 'double') {
         const output = `'${name}': ${type} {${value}.0}`;
-        console.log(output);
+        //console.log(output);
       } else {
         const output = `'${name}': ${type} {${value}}`;
-        console.log(output);
+        //console.log(output);
       }
     }
   };
@@ -935,13 +943,26 @@ const main = () => {
     expression = evalled;
 
     expression = expression.replace(/ /g, '');
+    //console.log(expression)
 
     for (let i = 0; i < table.length; i++) {
       if (expression.includes(table[i].name)) {
+        
         if (expression[expression.indexOf(table[i].name) + 1] !== '=') {
-          expression = expression.replace(table[i].name, table[i].value);
+          if (table[i].name.length === 4) {
+            if (expression[expression.indexOf(table[i].name) + 4] === '=') {
+              //console.log('found ', table[i].name);
+              continue;
+            }
+            expression = expression.replace(table[i].name, table[i].value);
+            i--;
+            continue; 
+          } else{
+            expression = expression.replace(table[i].name, table[i].value);
           i--;
           continue;
+          }
+          
         }
         if (expression[expression.indexOf(table[i].name) + 1] === '=') {
           expression = expression.replace(
@@ -992,7 +1013,7 @@ const main = () => {
     //console.log(splitted);
     const exprs = splitted.map(arr => arr[1]);
 
-    console.log({exprs});
+    //console.log({exprs});
     if (exprs[0].includes('[-')) {
       console.log(`ERROR: Index of a array should be >= 0 and <= ${arrayIndex}`);
       process.exit(0)
@@ -1005,8 +1026,16 @@ const main = () => {
 
     const results = [];
     for (const el in hash) {
+      //console.log(hash)
+      if (hash[el].includes('--')) {
+        hash[el] = hash[el].replace('--', '+')
+      }
       try {
         const value = eval(hash[el]);
+        if (!value) {
+          console.log('ERROR: Index out of range: ', hash[el])
+          process.exit(0)
+        }
         results.push({ name: el, value });
       } catch (e) {
         console.log(
@@ -1016,7 +1045,7 @@ const main = () => {
       }
     }
 
-    console.log(results);
+    console.log({results});
 
     for (let i = 0; i < table.length; i++) {
       for (let j = 0; j < results.length; j++) {
@@ -1040,9 +1069,7 @@ const main = () => {
   vars = vars.filter((item, index, arr) => {
     if (arr.indexOf(item) !== index) {
       console.log(
-        `ERROR: Variable ${item} has already been declared at index ${str.indexOf(
-          item
-        )}`
+        `ERROR: Variable ${item} has already been declared`
       );
       process.exit(1);
     }
@@ -1075,7 +1102,7 @@ const main = () => {
   //console.log({creationStage})
   calculations(actions, info, variables);
 
-  console.log(expForAssembly);
+  //console.log(expForAssembly);
   let splitted = expForAssembly.split(';');
   splitted = splitted.map(el => el.trim());
   splitted.pop();
@@ -1173,7 +1200,7 @@ const main = () => {
 
       if (arr[0].toString().length === 1) {
         //console.log({xmms})
-        console.log({ arr: arr[0].toString() });
+        //console.log({ arr: arr[0].toString() });
         const values = [];
         xmms.forEach(obj => {
           values.push(Object.values(obj)[0]);
@@ -1249,7 +1276,7 @@ const main = () => {
     }
   });
 
-  console.log({ flatted });
+ // console.log({ flatted });
 
   for (let i = 0; i < 1; i++) {
     //operationsModified.forEach((expr, i, arr) => {
@@ -1286,13 +1313,13 @@ const main = () => {
             counter++;
           } else {
             const alreadyThere = [];
-            console.log('variable', str, xmms);
+            //console.log('variable', str, xmms);
             xmms.forEach(obj => alreadyThere.push(Object.values(obj)[0]));
-            console.log({ alreadyThere });
+            //console.log({ alreadyThere });
             if (!alreadyThere.includes(str)) {
               movupss.push('movups xmm' + counter + ', ' + str);
 
-              console.log('movups xmm' + counter + ', ' + str);
+              //console.log('movups xmm' + counter + ', ' + str);
               xmms.push({ ['xmm' + counter]: str });
 
               counter++;
@@ -1350,21 +1377,21 @@ const main = () => {
 
   let resultss = [];
 
-  console.log(dividedByExpr)
+  //console.log(dividedByExpr)
 
   dividedByExpr = dividedByExpr.map((arr, i, table) => {
     arr.map((exp, j, exprs) => {
       if (j === 0) {
-        console.log(exp)
+        //console.log(exp)
         firstXmm = exp[0];
         secondXmm = exp[2];
         exp[1] = sseTransform[exp[1]];
         resultss.push([exp[1], exp[0].concat(','), exp[2]]);
       } else {
-        console.log({exp, firstXmm, secondXmm})
+        //console.log({exp, firstXmm, secondXmm})
         if (exp.includes(firstXmm)) {
           exp[1] = sseTransform[exp[1]];
-          console.log({exp, firstXmm})
+          //console.log({exp, firstXmm})
           const index = exp.indexOf(firstXmm);
           if (index !== 0) {
             let temp = exp[0];
@@ -1372,8 +1399,8 @@ const main = () => {
             exp[2] = temp;
           }
           resultss.push([exp[1], exp[2].concat(','), exp[0]]);
-          console.log(resultss)
-          console.log({resL : [exp[1], exp[2], exp[0]]}) // need to be checked
+          //console.log(resultss)
+          //console.log({resL : [exp[1], exp[2], exp[0]]}) // need to be checked
           return [exp[0], exp[1], exp[2]];
         } else if (exp.includes(secondXmm)) {
           exp[1] = sseTransform[exp[1]];
@@ -1409,7 +1436,7 @@ const main = () => {
           part[0] = part[0].split(' ')[0];
           //console.log({ad: part[0]})
         }
-        console.log({ part, expression });
+        //console.log({ part, expression });
         if (!expression[0][0].includes('[')) {
           const assignment = part[0].trim();
           let variable = expression[0][0];
@@ -1443,7 +1470,7 @@ const main = () => {
       ) {
         let variable = expression[0][0];
         const assignment = part[0]; // need to be space here
-        console.log({variable})
+        //console.log({variable})
         xmms.forEach((obj, i, table) => {
           if (Object.values(obj)[0] === assignment) {
             //console.log('Found ', variable);
@@ -1456,7 +1483,7 @@ const main = () => {
                 arr[1][0].indexOf(']')
               );
               if (arrName === '' && arrIndex === '') {
-                console.log(arr[0][0].indexOf('['))
+                //console.log(arr[0][0].indexOf('['))
                 arrName = arr[0][0].slice(0, arr[0][0].indexOf('['));
                 arrIndex = arr[0][0].slice(
                 arr[0][0].indexOf('[') + 1,
@@ -1468,7 +1495,7 @@ const main = () => {
               //console.log({arrName, arrIndex})
 
               variable = `[4 * ${arrIndex}] + ${arrName}`;
-              console.log({variable})
+              //console.log({variable})
               if (
                 movupss[movupss.length - 1] !==
                 `movups ${variable}, ${register}`
@@ -1477,7 +1504,7 @@ const main = () => {
               }
             } else {
               const ex = `movups ${variable}, ${register}`;
-              console.log({ variable, register, movupss });
+              //console.log({ variable, register, movupss });
               if (
                 movupss[movupss.length - 1] !==
                 `movups ${variable}, ${register}`
@@ -1491,7 +1518,7 @@ const main = () => {
     });
   });
 
-  console.log(movupss);
+  //console.log(movupss);
 
   const movHandlerCreation = (obj, i, table) => {
     // ; a[0] : = 1
@@ -1523,91 +1550,30 @@ mov ${obj.name}, ${makeIEE754Hex(obj.intPart, obj.floatPart)} //${obj.name} = ${
   //console.log(final)
   //const final = output.join(''), movupss.join('\n'));
   // console.log(finalArr)
-  const time = new Date().now;
-  const path = './rgr-tests/a' + '.asm';
+  //const time = new Date().getMinutes();
+  //console.log(time)
+  const path = './rgr-tests/generatedCode' + '.asm';
   fs.writeFileSync(path, final);
 };
 
 
 
-//console.log(makeIEE754Hex(0, 0));
 
-// #include <iostream>
-// #include <string>
-// using namespace std;
-// double b, a[4];  short n,d; b=2*a[n]; b=d;
-// int main()
-// {
-
-//   double b00 = 4;
-//   double a11 = 4.2;
-//   short d00 = 20;
-
-//   float b0 = (float)b00;
-//   float a10 = (float)a11;
-//   float d0 = (float)d00;
-
-//   float a[4];
-
-//   float d;
-//   float a1;
-//   float b;
-//   float param1 = 2;
-
-//   __asm {
-//     // probable need to assign variables here
-//     ; a[0] : = 1
-//     mov eax, 1075303564
-//     mov dword ptr[a + 0], eax
-//     ; a[1] : = 2
-//     mov eax, 1075303564
-//     mov dword ptr[a + 4], eax
-//     ; a[2] : = 3
-//     mov eax, 1075303564
-//     mov dword ptr[a + 8], eax
-//     ; a[3] : = 4
-//     mov eax, 1035303564
-//     mov dword ptr[a + 12], eax
-//     //mov b, 1075303564
-//     mov esi, 3
-//     movups xmm0, b;
-//     movups xmm1, a10;
-//     movups xmm2, param1
-//     movups xmm3, [4 * esi] + a
-//     //movups xmm3, d0;
-//     addss xmm3, xmm2 // + return result to first parametr
-//     //subss xmm1, xmm2 // - return result to first parametr
-//     //mulss xmm1, xmm2 // * return result to first parametr
-//     //divss xmm1, xmm2 // / return result to first parametr
-
-//     //mulss xmm0, xmm1;
-
-//     movups b, xmm3;
-//     //movups a1, xmm0;
-//     //movups d, xmm3;
-//   };
-
-//   for (int i = 0; i < 4; i++)
-//     cout << a[i] << " \n";
-//   cout << b << " ";
-//   //cout << a1 << " ";
-//   //cout << d << " ";
-
-//   cout << "Press Enter...";
-//   string t;
-//   getline(cin, t);
-// }
-//console.log(actTokens);
-//console.log({ actLexems });
 let coun = 0;
 
 const checking = (lexTable, index) => {
   if (index === lexTable.length - 1) {
     coun++;
-    //console.log('Syntax1 is correct');
-    if (coun === 1) checking(lexems, 0);
-    if (coun === 2) console.log('Syntax is right');
+    
+    if (coun === 1) {
+      console.log('Lexical analyze is correct');
+      checking(lexems, 0);
+    } 
+    console.log('Syntax analyze is correct');
+    //if (coun === 2) 
     main();
+    console.log('Semantic anazyle is correct');
+    console.log('Assembly code generated successfully.')
     process.exit(0);
   }
   //console.log(lexems[index])
@@ -1615,7 +1581,7 @@ const checking = (lexTable, index) => {
   if (index === 0 || lexTable[index - 1].name === 'T_SEMICOLON') {
     if (lexem.type !== 'ID') {
       if (lexem.type !== 'type-operator') {
-        console.log(lexem);
+        //console.log(lexem);
         console.log(
           `ERROR: Expression cant start with the lexem \nlexem '${lexTable[index].token}' at ${lexTable[index].index} index`
         );
