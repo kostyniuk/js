@@ -21,5 +21,11 @@ const arr = [
 const calcSumOfPropeperty = (arr, property, initial = 0) =>
   arr.reduce((prev, current) => prev + current[property], initial);
 
+const fetchPropertyFromArr = (arr, property) => {
+  return arr.reduce((prev, current) => {
+    return [...prev, current[property]];
+  }, []);
+};
 const totalAge = calcSumOfPropeperty(arr, 'age');
-console.log({ totalAge });
+const allUsernames = fetchPropertyFromArr(arr, 'username');
+console.log({ totalAge, allUsernames });
