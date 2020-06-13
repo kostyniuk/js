@@ -10,6 +10,9 @@ const fetchPropertyFromArr = (arr, property) => {
   }, []);
 };
 
+const calcSumOfPropeperty = (arr, property, initial = 0) =>
+  arr.reduce((prev, current) => prev + current[property], initial);
+
 class User {
   constructor(info) {
     this.id = info.id;
@@ -21,6 +24,11 @@ class User {
   static allHobies(...params) {
     return fetchPropertyFromArr(params, 'hobbies');
   }
+
+  static totalAge(...params) {
+    return calcSumOfPropeperty(params, 'age');
+  }
+
   get yearOfBirth() {
     return new Date().getUTCFullYear() - this.age;
   }
@@ -48,15 +56,12 @@ const isco = new User({
 });
 
 const allHobbies = User.allHobies(kostyniuk, dloading, isco);
-console.log({ allHobbies });
+const totalAge = User.totalAge(kostyniuk, dloading, isco);
+
+console.log({ allHobbies, totalAge });
 
 const arr = [kostyniuk, dloading, isco];
 
-const calcSumOfPropeperty = (arr, property, initial = 0) =>
-  arr.reduce((prev, current) => prev + current[property], initial);
-
-const totalAge = calcSumOfPropeperty(arr, 'age');
 const allUsernames = fetchPropertyFromArr(arr, 'username');
-// const allHobbies = fetchPropertyFromArr(arr, 'hobbies');
 const allYearsOfBirth = fetchPropertyFromArr(arr, 'yearOfBirth');
-// console.log({ totalAge, allUsernames, allHobbies, allYearsOfBirth });
+console.log({ allUsernames, allYearsOfBirth });
