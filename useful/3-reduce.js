@@ -1,24 +1,37 @@
 'use strict';
 
+class User {
+  constructor(info) {
+    this.id = info.id;
+    this.username = info.username;
+    this.age = info.age;
+    this.hobbies = info.hobbies;
+  }
+
+  get yearOfBirth() {
+    return new Date().getUTCFullYear() - this.age;
+  }
+}
+
 const arr = [
-  {
+  new User({
     id: 1,
     username: 'kostyniuk',
     age: 20,
-    hobbies: ['NBA', 'football', 'music']
-  },
-  {
+    hobbies: ['NBA', 'football', 'music'],
+  }),
+  new User({
     id: 2,
     username: 'dloading',
     age: 23,
-    hobbies: ['NBA', 'dogs', 'food']
-  },
-  {
+    hobbies: ['NBA', 'dogs', 'food'],
+  }),
+  new User({
     id: 3,
     username: 'isco',
     age: 27,
-    hobbies: ['NBA', 'golf']
-  },
+    hobbies: ['NBA', 'golf'],
+  }),
 ];
 
 const calcSumOfPropeperty = (arr, property, initial = 0) =>
@@ -36,4 +49,5 @@ const fetchPropertyFromArr = (arr, property) => {
 const totalAge = calcSumOfPropeperty(arr, 'age');
 const allUsernames = fetchPropertyFromArr(arr, 'username');
 const allHobbies = fetchPropertyFromArr(arr, 'hobbies');
-console.log({ totalAge, allUsernames, allHobbies });
+const allYearsOfBirth = fetchPropertyFromArr(arr, 'yearOfBirth');
+console.log({ totalAge, allUsernames, allHobbies, allYearsOfBirth });
