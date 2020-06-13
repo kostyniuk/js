@@ -64,4 +64,5 @@ const arr = [kostyniuk, dloading, isco];
 
 const allUsernames = fetchPropertyFromArr(arr, 'username');
 const allYearsOfBirth = fetchPropertyFromArr(arr, 'yearOfBirth');
+
 console.log({ allUsernames, allYearsOfBirth });
