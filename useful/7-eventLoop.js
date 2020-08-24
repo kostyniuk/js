@@ -30,6 +30,10 @@ fs.readFile(__filename, () => {
   });
 });
 
+setImmediate(() => {
+  console.log('Immediate outer');
+});
+
 setTimeout(() => {
   console.log('Timeout 4, 20ms');
 }, 20);
