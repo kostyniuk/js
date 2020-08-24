@@ -34,6 +34,8 @@ setImmediate(() => {
   console.log('Immediate outer');
 });
 
+Promise.resolve('resolved').then((value) => console.log(value));
+
 setTimeout(() => {
   console.log('Timeout 4, 20ms');
 }, 20);
